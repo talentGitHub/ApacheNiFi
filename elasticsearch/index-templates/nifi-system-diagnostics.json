@@ -1,0 +1,114 @@
+{
+  "index_patterns": ["nifi-system-diagnostics-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-system-diagnostics-ilm",
+      "index.lifecycle.rollover_alias": "nifi-system-diagnostics"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "heapUtilization": {
+          "type": "float"
+        },
+        "usedHeapBytes": {
+          "type": "long"
+        },
+        "maxHeapBytes": {
+          "type": "long"
+        },
+        "usedNonHeapBytes": {
+          "type": "long"
+        },
+        "maxNonHeapBytes": {
+          "type": "long"
+        },
+        "processorLoadAverage": {
+          "type": "float"
+        },
+        "totalThreads": {
+          "type": "integer"
+        },
+        "daemonThreads": {
+          "type": "integer"
+        },
+        "gcCollectionCount": {
+          "type": "long"
+        },
+        "gcCollectionTime": {
+          "type": "long"
+        },
+        "gcCollectionMillis": {
+          "type": "long"
+        },
+        "contentRepositoryStorageUsage": {
+          "type": "object",
+          "properties": {
+            "freeSpaceBytes": {
+              "type": "long"
+            },
+            "totalSpaceBytes": {
+              "type": "long"
+            },
+            "usedSpaceBytes": {
+              "type": "long"
+            },
+            "utilization": {
+              "type": "float"
+            }
+          }
+        },
+        "flowFileRepositoryStorageUsage": {
+          "type": "object",
+          "properties": {
+            "freeSpaceBytes": {
+              "type": "long"
+            },
+            "totalSpaceBytes": {
+              "type": "long"
+            },
+            "usedSpaceBytes": {
+              "type": "long"
+            },
+            "utilization": {
+              "type": "float"
+            }
+          }
+        },
+        "provenanceRepositoryStorageUsage": {
+          "type": "object",
+          "properties": {
+            "freeSpaceBytes": {
+              "type": "long"
+            },
+            "totalSpaceBytes": {
+              "type": "long"
+            },
+            "usedSpaceBytes": {
+              "type": "long"
+            },
+            "utilization": {
+              "type": "float"
+            }
+          }
+        },
+        "nodeAddress": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "composed_of": [],
+  "version": 1,
+  "_meta": {
+    "description": "Index template for NiFi system diagnostics with 90-day retention"
+  }
+}

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<template encoding-version="1.3">
+    <description>Self-healing auto-remediation flow for Apache NiFi monitoring</description>
+    <groupId>auto-remediation</groupId>
+    <name>NiFi Self-Healing Flow</name>
+    <snippet>
+        <processGroups>
+            <id>self-healing-root</id>
+            <name>Self-Healing Auto-Remediation</name>
+            <position x="0.0" y="0.0"/>
+            <comment>Automated incident detection and resolution workflows</comment>
+            
+            <!-- Port Conflict Resolution Processor Group -->
+            <processGroup>
+                <id>port-conflict-resolution</id>
+                <name>Port Conflict Resolution</name>
+                <position x="100.0" y="100.0"/>
+                <comment>Detects and resolves port binding conflicts</comment>
+                
+                <processors>
+                    <!-- Monitor Bulletins -->
+                    <processor>
+                        <id>monitor-bulletins</id>
+                        <name>Monitor Port Conflict Bulletins</name>
+                        <class>org.apache.nifi.processors.standard.InvokeHTTP</class>
+                        <bundle>
+                            <group>org.apache.nifi</group>
+                            <artifact>nifi-standard-nar</artifact>
+                            <version>1.23.2</version>
+                        </bundle>
+                        <position x="0.0" y="0.0"/>
+                        <config>
+                            <schedulingPeriod>10 sec</schedulingPeriod>
+                            <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                            <properties>
+                                <property>
+                                    <name>HTTP Method</name>
+                                    <value>GET</value>
+                                </property>
+                                <property>
+                                    <name>Remote URL</name>
+                                    <value>http://localhost:8080/nifi-api/flow/bulletin-board</value>
+                                </property>
+                            </properties>
+                        </config>
+                    </processor>
+                    
+                    <!-- Detect Port Conflicts -->
+                    <processor>
+                        <id>detect-port-conflict</id>
+                        <name>Detect Port Conflict</name>
+                        <class>org.apache.nifi.processors.standard.RouteOnContent</class>
+                        <bundle>
+                            <group>org.apache.nifi</group>
+                            <artifact>nifi-standard-nar</artifact>
+                            <version>1.23.2</version>
+                        </bundle>
+                        <position x="200.0" y="0.0"/>
+                        <config>
+                            <properties>
+                                <property>
+                                    <name>Match Requirement</name>
+                                    <value>content must contain match</value>
+                                </property>
+                                <property>
+                                    <name>Search Value</name>
+                                    <value>Address already in use</value>
+                                </property>
+                            </properties>
+                        </config>
+                    </processor>
+                    
+                    <!-- Log Remediation Action -->
+                    <processor>
+                        <id>log-remediation</id>
+                        <name>Log Remediation Action</name>
+                        <class>org.apache.nifi.processors.standard.LogAttribute</class>
+                        <bundle>
+                            <group>org.apache.nifi</group>
+                            <artifact>nifi-standard-nar</artifact>
+                            <version>1.23.2</version>
+                        </bundle>
+                        <position x="400.0" y="0.0"/>
+                        <config>
+                            <properties>
+                                <property>
+                                    <name>Log Level</name>
+                                    <value>warn</value>
+                                </property>
+                                <property>
+                                    <name>Log Payload</name>
+                                    <value>true</value>
+                                </property>
+                            </properties>
+                        </config>
+                    </processor>
+                    
+                    <!-- Send to Elasticsearch for Audit -->
+                    <processor>
+                        <id>audit-to-elasticsearch</id>
+                        <name>Audit to Elasticsearch</name>
+                        <class>org.apache.nifi.processors.elasticsearch.PutElasticsearchRecord</class>
+                        <bundle>
+                            <group>org.apache.nifi</group>
+                            <artifact>nifi-elasticsearch-nar</artifact>
+                            <version>1.23.2</version>
+                        </bundle>
+                        <position x="600.0" y="0.0"/>
+                        <config>
+                            <properties>
+                                <property>
+                                    <name>Index</name>
+                                    <value>nifi-remediation-audit</value>
+                                </property>
+                            </properties>
+                        </config>
+                    </processor>
+                </processors>
+                
+                <connections>
+                    <connection>
+                        <id>conn-1</id>
+                        <name>monitor-to-detect</name>
+                        <source>
+                            <id>monitor-bulletins</id>
+                            <type>PROCESSOR</type>
+                            <groupId>port-conflict-resolution</groupId>
+                        </source>
+                        <destination>
+                            <id>detect-port-conflict</id>
+                            <type>PROCESSOR</type>
+                            <groupId>port-conflict-resolution</groupId>
+                        </destination>
+                        <selectedRelationships>
+                            <relationship>success</relationship>
+                        </selectedRelationships>
+                    </connection>
+                    
+                    <connection>
+                        <id>conn-2</id>
+                        <name>detect-to-log</name>
+                        <source>
+                            <id>detect-port-conflict</id>
+                            <type>PROCESSOR</type>
+                            <groupId>port-conflict-resolution</groupId>
+                        </source>
+                        <destination>
+                            <id>log-remediation</id>
+                            <type>PROCESSOR</type>
+                            <groupId>port-conflict-resolution</groupId>
+                        </destination>
+                        <selectedRelationships>
+                            <relationship>matched</relationship>
+                        </selectedRelationships>
+                    </connection>
+                    
+                    <connection>
+                        <id>conn-3</id>
+                        <name>log-to-audit</name>
+                        <source>
+                            <id>log-remediation</id>
+                            <type>PROCESSOR</type>
+                            <groupId>port-conflict-resolution</groupId>
+                        </source>
+                        <destination>
+                            <id>audit-to-elasticsearch</id>
+                            <type>PROCESSOR</type>
+                            <groupId>port-conflict-resolution</groupId>
+                        </destination>
+                        <selectedRelationships>
+                            <relationship>success</relationship>
+                        </selectedRelationships>
+                    </connection>
+                </connections>
+            </processGroup>
+        </processGroups>
+    </snippet>
+    <timestamp>01/28/2026 15:37:00 UTC</timestamp>
+</template>

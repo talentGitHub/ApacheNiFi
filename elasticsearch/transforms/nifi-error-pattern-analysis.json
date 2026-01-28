@@ -1,0 +1,85 @@
+{
+  "transform_id": "nifi-error-pattern-analysis",
+  "description": "Aggregates error patterns every 10 minutes for predictive alerting",
+  "source": {
+    "index": [
+      "nifi-bulletins-*"
+    ],
+    "query": {
+      "term": {
+        "bulletinLevel": "ERROR"
+      }
+    }
+  },
+  "dest": {
+    "index": "nifi-ml-error-patterns"
+  },
+  "frequency": "10m",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "bulletinCategory": {
+        "terms": {
+          "field": "bulletinCategory"
+        }
+      },
+      "bulletinSourceName": {
+        "terms": {
+          "field": "bulletinSourceName"
+        }
+      },
+      "bulletinSourceType": {
+        "terms": {
+          "field": "bulletinSourceType"
+        }
+      },
+      "timestamp": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "fixed_interval": "10m"
+        }
+      },
+      "hour_of_day": {
+        "script": {
+          "source": "ZonedDateTime.ofInstant(Instant.ofEpochMilli(doc['@timestamp'].value.toInstant().toEpochMilli()), ZoneId.of('UTC')).getHour()",
+          "lang": "painless"
+        }
+      }
+    },
+    "aggregations": {
+      "error_count": {
+        "value_count": {
+          "field": "bulletinId"
+        }
+      },
+      "unique_messages": {
+        "cardinality": {
+          "field": "bulletinMessage.keyword"
+        }
+      },
+      "avg_severity": {
+        "avg": {
+          "field": "severityScore"
+        }
+      },
+      "sample_message": {
+        "top_metrics": {
+          "metrics": {
+            "field": "bulletinMessage.keyword"
+          },
+          "sort": {
+            "@timestamp": "desc"
+          }
+        }
+      }
+    }
+  },
+  "settings": {
+    "max_page_search_size": 500
+  }
+}

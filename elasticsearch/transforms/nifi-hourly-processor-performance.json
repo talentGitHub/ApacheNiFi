@@ -1,0 +1,84 @@
+{
+  "transform_id": "nifi-hourly-processor-performance",
+  "description": "Aggregates processor performance metrics every hour for ML training",
+  "source": {
+    "index": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "nifi-ml-features-hourly"
+  },
+  "frequency": "1h",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "componentName": {
+        "terms": {
+          "field": "componentName"
+        }
+      },
+      "processorType": {
+        "terms": {
+          "field": "processorType"
+        }
+      },
+      "timestamp": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "fixed_interval": "1h"
+        }
+      }
+    },
+    "aggregations": {
+      "avg_processing_time": {
+        "avg": {
+          "field": "processingNanos"
+        }
+      },
+      "max_processing_time": {
+        "max": {
+          "field": "processingNanos"
+        }
+      },
+      "total_invocations": {
+        "sum": {
+          "field": "invocations"
+        }
+      },
+      "total_bytes_transferred": {
+        "sum": {
+          "field": "bytesTransferred"
+        }
+      },
+      "avg_queue_count": {
+        "avg": {
+          "field": "queuedCount"
+        }
+      },
+      "max_queue_count": {
+        "max": {
+          "field": "queuedCount"
+        }
+      },
+      "error_count": {
+        "filter": {
+          "term": {
+            "runStatus": "Invalid"
+          }
+        }
+      }
+    }
+  },
+  "settings": {
+    "max_page_search_size": 500
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "description": "Enrichment pipeline for NiFi flow performance - calculates processing efficiency and throughput rates",
+  "processors": [
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.processingNanos != null && ctx.invocations != null && ctx.invocations > 0) { ctx.processingEfficiency = (float)(ctx.processingNanos / 1000000000.0 / ctx.invocations); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.queuedCount != null && ctx.queuedSize != null && ctx.queuedSize > 0) { ctx.queueUtilization = (float)(ctx.queuedCount * 100.0 / ctx.queuedSize); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.bytesTransferred != null && ctx.processingNanos != null && ctx.processingNanos > 0) { ctx.throughputRate = (float)(ctx.bytesTransferred * 1000000000.0 / ctx.processingNanos); }"
+      }
+    },
+    {
+      "set": {
+        "field": "environment",
+        "value": "production",
+        "if": "ctx.environment == null"
+      }
+    },
+    {
+      "date": {
+        "field": "@timestamp",
+        "formats": ["ISO8601"]
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

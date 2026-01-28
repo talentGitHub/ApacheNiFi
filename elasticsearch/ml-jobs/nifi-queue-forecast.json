@@ -1,0 +1,48 @@
+{
+  "job_id": "nifi-queue-forecast",
+  "description": "Forecasts NiFi queue sizes 24 hours ahead to prevent backpressure",
+  "analysis_config": {
+    "bucket_span": "1h",
+    "detectors": [
+      {
+        "detector_description": "Queue size forecasting",
+        "function": "mean",
+        "field_name": "queuedCount",
+        "by_field_name": "componentName"
+      }
+    ],
+    "influencers": [
+      "componentName",
+      "nodeAddress"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "512mb"
+  },
+  "model_plot_config": {
+    "enabled": true
+  },
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-queue-forecast",
+    "indices": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "@timestamp": {
+                "gte": "now-90d"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

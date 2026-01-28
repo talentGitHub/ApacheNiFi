@@ -1,0 +1,55 @@
+{
+  "job_id": "nifi-processing-anomaly",
+  "description": "Detects anomalies in NiFi processor execution times and invocation counts",
+  "analysis_config": {
+    "bucket_span": "15m",
+    "detectors": [
+      {
+        "detector_description": "High mean processing time by processor",
+        "function": "high_mean",
+        "field_name": "processingNanos",
+        "by_field_name": "componentName"
+      },
+      {
+        "detector_description": "Unusual invocation count by processor",
+        "function": "mean",
+        "field_name": "invocations",
+        "by_field_name": "componentName"
+      }
+    ],
+    "influencers": [
+      "componentName",
+      "processorType",
+      "nodeAddress"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "256mb"
+  },
+  "model_plot_config": {
+    "enabled": true
+  },
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-processing-anomaly",
+    "indices": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "@timestamp": {
+                "gte": "now-30d"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
