@@ -219,7 +219,7 @@ This document provides a detailed time estimation for implementing the Apache Ni
 
 **Objective**: Implement ML-based anomaly detection and forecasting
 
-#### Week 7: Anomaly Detection Jobs (40 hours)
+#### Week 7: Anomaly Detection Jobs (42 hours)
 - **Processing Time Anomaly Detection** (14 hours)
   - Job configuration (15-min bucket span)
   - Metric selection and tuning
@@ -283,7 +283,7 @@ This document provides a detailed time estimation for implementing the Apache Ni
   - Tuning procedures
   - Troubleshooting guide
 
-**Phase 3 Total**: 120 hours (3 weeks)
+**Phase 3 Total**: 122 hours (3 weeks)
 
 ---
 
@@ -595,12 +595,12 @@ This document provides a detailed time estimation for implementing the Apache Ni
 |-------|-----------|----------|-------|------------|
 | 1 | Foundation & Data Pipeline | 3 weeks | 120 | 120 |
 | 2 | Dashboards & Visualization | 3 weeks | 120 | 240 |
-| 3 | Machine Learning & Transforms | 3 weeks | 120 | 360 |
-| 4 | Alerting System | 2 weeks | 80 | 440 |
-| 5 | LLM Analysis Service | 3 weeks | 120 | 560 |
-| 6 | Auto-Remediation | 2 weeks | 80 | 640 |
-| 7 | Testing & Deployment | 2 weeks | 80 | 720 |
-| **Total** | | **18 weeks** | **720 hours** | |
+| 3 | Machine Learning & Transforms | 3 weeks | 122 | 362 |
+| 4 | Alerting System | 2 weeks | 80 | 442 |
+| 5 | LLM Analysis Service | 3 weeks | 120 | 562 |
+| 6 | Auto-Remediation | 2 weeks | 80 | 642 |
+| 7 | Testing & Deployment | 2 weeks | 80 | 722 |
+| **Total** | | **18 weeks** | **722 hours** | |
 
 **Recommended Buffer**: Add 2 weeks (80 hours) for unexpected issues, bugs, and refinements.
 
@@ -707,9 +707,9 @@ This document provides a detailed time estimation for implementing the Apache Ni
 
 ### Development Costs
 
-- **Single Senior Engineer**: 720 hours @ $100-150/hour = $72,000-108,000
+- **Single Senior Engineer**: 722 hours @ $100-150/hour = $72,200-108,300
 - **Infrastructure During Development**: 4.5 months × $600 = $2,700
-- **Total Development Cost**: ~$74,700-110,700 (engineering + infrastructure)
+- **Total Development Cost**: ~$74,900-111,000 (engineering + infrastructure)
 
 ---
 
@@ -757,7 +757,7 @@ If a second engineer is added:
 
 ## Conclusion
 
-**Total Estimated Time**: **18 weeks (720 hours)** for complete implementation
+**Total Estimated Time**: **18 weeks (722 hours)** for complete implementation
 
 **Recommended Timeline**: **20 weeks** with buffer for unexpected issues
 
