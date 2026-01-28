@@ -39,7 +39,11 @@ def main():
     print("Validating Kibana Dashboards")
     print("========================================\n")
     
-    dashboard_dir = "../../kibana/dashboards"
+    # Find the repository root
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.abspath(os.path.join(script_dir, '..', '..'))
+    dashboard_dir = os.path.join(repo_root, "kibana", "dashboards")
+    
     if not os.path.exists(dashboard_dir):
         print(f"✗ Dashboard directory not found: {dashboard_dir}")
         return 1
