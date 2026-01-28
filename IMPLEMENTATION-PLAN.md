@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This document provides a detailed time estimation for implementing the Apache NiFi Observability Platform with a single engineer. The total estimated time is **16-20 weeks** (4-5 months) for full implementation, including development, testing, and documentation.
+This document provides a detailed time estimation for implementing the Apache NiFi Observability Platform with a single engineer. The total estimated time is **18-20 weeks** (4.5-5 months) for full implementation, including development, testing, and documentation.
 
 ## Assumptions
 
@@ -241,7 +241,7 @@ This document provides a detailed time estimation for implementing the Apache Ni
   - False positive reduction
   - Alert configuration
 
-**Week 8: Continuous Transforms (40 hours)
+#### Week 8: Continuous Transforms (40 hours)
 - **Hourly Processor Performance Summary Transform** (16 hours)
   - Transform configuration
   - Aggregation logic (processing times, invocations, throughput, error rates)
@@ -604,7 +604,7 @@ This document provides a detailed time estimation for implementing the Apache Ni
 
 **Recommended Buffer**: Add 2 weeks (80 hours) for unexpected issues, bugs, and refinements.
 
-**Total Realistic Estimate**: **16-20 weeks (4-5 months)**
+**Total Realistic Estimate**: **18-20 weeks (4.5-5 months)**
 
 ---
 
@@ -708,19 +708,19 @@ This document provides a detailed time estimation for implementing the Apache Ni
 ### Development Costs
 
 - **Single Senior Engineer**: 720 hours @ $100-150/hour = $72,000-108,000
-- **Infrastructure During Development**: 4 months × $600 = $2,400
-- **Total Development Cost**: ~$74,400-110,400
+- **Infrastructure During Development**: 4.5 months × $600 = $2,700
+- **Total Development Cost**: ~$74,700-110,700 (engineering + infrastructure)
 
 ---
 
 ## Optimization Opportunities
 
-### If Timeline Needs Compression (to 12-14 weeks):
+### If Timeline Needs Compression (to 14 weeks):
 
 1. **Reduce Dashboard Count**: Focus on top 4 dashboards (save 1 week)
 2. **Defer Auto-Remediation**: Implement in Phase 2 (save 2 weeks)
 3. **Simplify LLM Service**: Use single provider, basic features (save 1 week)
-4. **Parallel Development**: If adding a second engineer to specific phases
+4. **Parallel Development**: If adding a second engineer, can reduce to 10-12 weeks
 
 ### If Budget is Constrained:
 
