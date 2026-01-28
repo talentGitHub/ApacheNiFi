@@ -1,0 +1,87 @@
+{
+  "index_patterns": ["nifi-flow-performance-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-flow-performance-ilm",
+      "index.lifecycle.rollover_alias": "nifi-flow-performance"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "componentId": {
+          "type": "keyword"
+        },
+        "componentName": {
+          "type": "keyword"
+        },
+        "componentType": {
+          "type": "keyword"
+        },
+        "processorType": {
+          "type": "keyword"
+        },
+        "runStatus": {
+          "type": "keyword"
+        },
+        "bytesRead": {
+          "type": "long"
+        },
+        "bytesWritten": {
+          "type": "long"
+        },
+        "bytesTransferred": {
+          "type": "long"
+        },
+        "flowFilesIn": {
+          "type": "long"
+        },
+        "flowFilesOut": {
+          "type": "long"
+        },
+        "flowFilesQueued": {
+          "type": "long"
+        },
+        "processingNanos": {
+          "type": "long"
+        },
+        "invocations": {
+          "type": "long"
+        },
+        "queuedCount": {
+          "type": "long"
+        },
+        "queuedSize": {
+          "type": "long"
+        },
+        "activeThreadCount": {
+          "type": "integer"
+        },
+        "processingEfficiency": {
+          "type": "float"
+        },
+        "queueUtilization": {
+          "type": "float"
+        },
+        "throughputRate": {
+          "type": "float"
+        },
+        "nodeAddress": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "composed_of": [],
+  "version": 1,
+  "_meta": {
+    "description": "Index template for NiFi flow performance metrics with 90-day retention"
+  }
+}

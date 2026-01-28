@@ -1,0 +1,66 @@
+{
+  "index_patterns": ["nifi-bulletins-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-bulletins-ilm",
+      "index.lifecycle.rollover_alias": "nifi-bulletins"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "bulletinId": {
+          "type": "keyword"
+        },
+        "bulletinLevel": {
+          "type": "keyword"
+        },
+        "bulletinMessage": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "bulletinSourceName": {
+          "type": "keyword"
+        },
+        "bulletinSourceType": {
+          "type": "keyword"
+        },
+        "bulletinGroupName": {
+          "type": "keyword"
+        },
+        "bulletinCategory": {
+          "type": "keyword"
+        },
+        "bulletinTimestamp": {
+          "type": "date"
+        },
+        "severityScore": {
+          "type": "integer"
+        },
+        "extractedPort": {
+          "type": "integer"
+        },
+        "nodeAddress": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "composed_of": [],
+  "version": 1,
+  "_meta": {
+    "description": "Index template for NiFi bulletins with 30-day retention"
+  }
+}

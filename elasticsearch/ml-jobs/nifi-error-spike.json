@@ -1,0 +1,64 @@
+{
+  "job_id": "nifi-error-spike",
+  "description": "Detects unusual error patterns and rare error types in NiFi bulletins",
+  "analysis_config": {
+    "bucket_span": "5m",
+    "detectors": [
+      {
+        "detector_description": "High error count",
+        "function": "high_count",
+        "by_field_name": "bulletinCategory"
+      },
+      {
+        "detector_description": "Rare error messages",
+        "function": "rare",
+        "by_field_name": "bulletinMessage.keyword"
+      },
+      {
+        "detector_description": "Unusual error rate by source",
+        "function": "count",
+        "by_field_name": "bulletinSourceName"
+      }
+    ],
+    "influencers": [
+      "bulletinCategory",
+      "bulletinSourceName",
+      "bulletinSourceType",
+      "nodeAddress"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "256mb"
+  },
+  "model_plot_config": {
+    "enabled": true
+  },
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-error-spike",
+    "indices": [
+      "nifi-bulletins-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "bulletinLevel": "ERROR"
+            }
+          },
+          {
+            "range": {
+              "@timestamp": {
+                "gte": "now-30d"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

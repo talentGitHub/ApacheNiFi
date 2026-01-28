@@ -1,0 +1,44 @@
+# Elasticsearch Cloud Configuration Example
+# Copy this file to elasticsearch-cloud.yaml and fill in your credentials
+
+elasticsearch:
+  cloud_id: "your-deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVmJDEyMzQ1Njc4OTBhYmNkZWYxMjM0NTY3ODkwYWJjZGVm"
+  api_key: "your-api-key-here"
+  # Alternative: Use username/password
+  # username: "elastic"
+  # password: "your-password"
+
+kibana:
+  endpoint: "https://your-kibana.kb.io"
+  # Uses same credentials as Elasticsearch
+
+nifi:
+  endpoint: "http://localhost:8080/nifi-api"
+  # For secured NiFi:
+  # username: "admin"
+  # password: "your-password"
+  # Or use certificate authentication
+
+llm:
+  provider: "openai"  # openai, anthropic, azure, custom
+  api_key: "your-llm-api-key"
+  model: "gpt-4-turbo"
+  # For Azure OpenAI:
+  # azure_endpoint: "https://your-resource.openai.azure.com/"
+  # azure_deployment: "your-deployment-name"
+
+alerts:
+  slack:
+    webhook_url: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+    channels:
+      - "#nifi-alerts"
+      - "#nifi-infrastructure"
+  email:
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    from_address: "nifi-alerts@company.com"
+    to_addresses:
+      - "ops-team@company.com"
+      - "infrastructure-team@company.com"
+  pagerduty:
+    integration_key: "your-pagerduty-integration-key"

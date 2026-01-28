@@ -1,0 +1,64 @@
+{
+  "description": "Enrichment pipeline for NiFi bulletins - adds severity scoring and error categorization",
+  "processors": [
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 1,
+        "if": "ctx.bulletinLevel == 'INFO'"
+      }
+    },
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 2,
+        "if": "ctx.bulletinLevel == 'WARN'"
+      }
+    },
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 3,
+        "if": "ctx.bulletinLevel == 'ERROR'"
+      }
+    },
+    {
+      "grok": {
+        "field": "bulletinMessage",
+        "patterns": [
+          ".*Address already in use.*port %{NUMBER:extractedPort:int}.*"
+        ],
+        "ignore_failure": true
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.bulletinMessage.contains('Address already in use')) { ctx.bulletinCategory = 'PORT_CONFLICT'; } else if (ctx.bulletinMessage.contains('OutOfMemoryError') || ctx.bulletinMessage.contains('heap')) { ctx.bulletinCategory = 'MEMORY'; } else if (ctx.bulletinMessage.contains('timeout') || ctx.bulletinMessage.contains('Timeout')) { ctx.bulletinCategory = 'TIMEOUT'; } else if (ctx.bulletinMessage.contains('Connection') || ctx.bulletinMessage.contains('connection')) { ctx.bulletinCategory = 'CONNECTION'; } else if (ctx.bulletinMessage.contains('Invalid') || ctx.bulletinMessage.contains('invalid')) { ctx.bulletinCategory = 'INVALID_STATE'; } else { ctx.bulletinCategory = 'OTHER'; }"
+      }
+    },
+    {
+      "date": {
+        "field": "bulletinTimestamp",
+        "target_field": "@timestamp",
+        "formats": ["ISO8601"],
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "environment",
+        "value": "production",
+        "if": "ctx.environment == null"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

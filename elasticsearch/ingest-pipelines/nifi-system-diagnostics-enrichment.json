@@ -1,0 +1,50 @@
+{
+  "description": "Enrichment pipeline for NiFi system diagnostics - normalizes percentages and parses nested structures",
+  "processors": [
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.usedHeapBytes != null && ctx.maxHeapBytes != null && ctx.maxHeapBytes > 0) { ctx.heapUtilization = (float)(ctx.usedHeapBytes * 100.0 / ctx.maxHeapBytes); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.contentRepositoryStorageUsage != null && ctx.contentRepositoryStorageUsage.totalSpaceBytes != null && ctx.contentRepositoryStorageUsage.totalSpaceBytes > 0) { long used = ctx.contentRepositoryStorageUsage.totalSpaceBytes - ctx.contentRepositoryStorageUsage.freeSpaceBytes; ctx.contentRepositoryStorageUsage.usedSpaceBytes = used; ctx.contentRepositoryStorageUsage.utilization = (float)(used * 100.0 / ctx.contentRepositoryStorageUsage.totalSpaceBytes); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.flowFileRepositoryStorageUsage != null && ctx.flowFileRepositoryStorageUsage.totalSpaceBytes != null && ctx.flowFileRepositoryStorageUsage.totalSpaceBytes > 0) { long used = ctx.flowFileRepositoryStorageUsage.totalSpaceBytes - ctx.flowFileRepositoryStorageUsage.freeSpaceBytes; ctx.flowFileRepositoryStorageUsage.usedSpaceBytes = used; ctx.flowFileRepositoryStorageUsage.utilization = (float)(used * 100.0 / ctx.flowFileRepositoryStorageUsage.totalSpaceBytes); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.provenanceRepositoryStorageUsage != null && ctx.provenanceRepositoryStorageUsage.totalSpaceBytes != null && ctx.provenanceRepositoryStorageUsage.totalSpaceBytes > 0) { long used = ctx.provenanceRepositoryStorageUsage.totalSpaceBytes - ctx.provenanceRepositoryStorageUsage.freeSpaceBytes; ctx.provenanceRepositoryStorageUsage.usedSpaceBytes = used; ctx.provenanceRepositoryStorageUsage.utilization = (float)(used * 100.0 / ctx.provenanceRepositoryStorageUsage.totalSpaceBytes); }"
+      }
+    },
+    {
+      "set": {
+        "field": "environment",
+        "value": "production",
+        "if": "ctx.environment == null"
+      }
+    },
+    {
+      "date": {
+        "field": "@timestamp",
+        "formats": ["ISO8601"]
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "error.message",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}
