@@ -355,6 +355,7 @@ All automated actions are logged to `nifi-remediation-audit` index:
 
 ## 📚 Documentation
 
+- **[Implementation Plan](IMPLEMENTATION-PLAN.md)**: Detailed time estimation for single-engineer implementation (18-20 weeks)
 - **[Deployment Guide](docs/DEPLOYMENT-GUIDE.md)**: Step-by-step installation instructions
 - **[Architecture](docs/ARCHITECTURE.md)**: System design and component interactions
 - **[User Guide](docs/USER-GUIDE.md)**: Dashboard usage and navigation
@@ -423,6 +424,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email**: support@your-company.com
 
 ## 🗺️ Roadmap
+
+> **Implementation Timeline**: For detailed time estimation with a single engineer, see [IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) (18-20 weeks total)
 
 ### Q1 2026
 - [x] Core monitoring dashboards
