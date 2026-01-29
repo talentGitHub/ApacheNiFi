@@ -1,0 +1,66 @@
+{
+  "description": "Enrichment pipeline for NiFi bulletins - adds severity scoring, error categorization, and port extraction",
+  "processors": [
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 1,
+        "if": "ctx.bulletinLevel == 'INFO'"
+      }
+    },
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 5,
+        "if": "ctx.bulletinLevel == 'WARN' || ctx.bulletinLevel == 'WARNING'"
+      }
+    },
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 10,
+        "if": "ctx.bulletinLevel == 'ERROR'"
+      }
+    },
+    {
+      "script": {
+        "description": "Categorize error messages",
+        "lang": "painless",
+        "source": "if (ctx.bulletinMessage != null) { String msg = ctx.bulletinMessage.toLowerCase(); if (msg.contains('address already in use') || msg.contains('port')) { ctx.errorCategory = 'PORT_CONFLICT'; } else if (msg.contains('memory') || msg.contains('heap') || msg.contains('outofmemory')) { ctx.errorCategory = 'MEMORY_ERROR'; } else if (msg.contains('timeout') || msg.contains('timed out')) { ctx.errorCategory = 'TIMEOUT'; } else if (msg.contains('connection') || msg.contains('connect')) { ctx.errorCategory = 'CONNECTION_ERROR'; } else if (msg.contains('unable to start') || msg.contains('failed to start')) { ctx.errorCategory = 'STARTUP_FAILURE'; } else if (msg.contains('exception') || msg.contains('error')) { ctx.errorCategory = 'GENERAL_ERROR'; } else { ctx.errorCategory = 'OTHER'; } }"
+      }
+    },
+    {
+      "grok": {
+        "field": "bulletinMessage",
+        "patterns": [
+          ".*port %{NUMBER:extractedPort:int}.*",
+          ".*:%{NUMBER:extractedPort:int}.*"
+        ],
+        "ignore_missing": true,
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "@timestamp",
+        "value": "{{bulletinTimestamp}}",
+        "if": "ctx.bulletinTimestamp != null"
+      }
+    },
+    {
+      "set": {
+        "field": "@timestamp",
+        "value": "{{_ingest.timestamp}}",
+        "if": "ctx.bulletinTimestamp == null"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "_ingest.error",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "index_patterns": ["nifi-flow-performance-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-flow-performance-ilm-policy",
+      "index.lifecycle.rollover_alias": "nifi-flow-performance",
+      "refresh_interval": "60s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "componentId": {
+          "type": "keyword"
+        },
+        "componentName": {
+          "type": "keyword"
+        },
+        "componentType": {
+          "type": "keyword"
+        },
+        "processorType": {
+          "type": "keyword"
+        },
+        "runStatus": {
+          "type": "keyword"
+        },
+        "bytesRead": {
+          "type": "long"
+        },
+        "bytesWritten": {
+          "type": "long"
+        },
+        "bytesTransferred": {
+          "type": "long"
+        },
+        "flowFilesReceived": {
+          "type": "long"
+        },
+        "flowFilesSent": {
+          "type": "long"
+        },
+        "flowFilesRemoved": {
+          "type": "long"
+        },
+        "inputCount": {
+          "type": "long"
+        },
+        "outputCount": {
+          "type": "long"
+        },
+        "activeThreadCount": {
+          "type": "integer"
+        },
+        "invocations": {
+          "type": "long"
+        },
+        "processingNanos": {
+          "type": "long"
+        },
+        "processingMillis": {
+          "type": "float"
+        },
+        "avgProcessingMillis": {
+          "type": "float"
+        },
+        "queuedCount": {
+          "type": "long"
+        },
+        "queuedSize": {
+          "type": "long"
+        },
+        "queueUtilization": {
+          "type": "float"
+        },
+        "backpressureObjectThreshold": {
+          "type": "long"
+        },
+        "backpressureSizeThreshold": {
+          "type": "long"
+        },
+        "throughputBytesPerSecond": {
+          "type": "float"
+        },
+        "throughputFlowFilesPerSecond": {
+          "type": "float"
+        },
+        "processingEfficiency": {
+          "type": "float"
+        },
+        "nodeId": {
+          "type": "keyword"
+        },
+        "processGroup": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "cluster": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "version": 1,
+  "_meta": {
+    "description": "Template for NiFi flow performance metrics - processor throughput, latency, queue stats collected every 1 hour"
+  }
+}

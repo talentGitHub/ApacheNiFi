@@ -1,0 +1,78 @@
+{
+  "index_patterns": ["nifi-bulletins-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-bulletins-ilm-policy",
+      "index.lifecycle.rollover_alias": "nifi-bulletins",
+      "refresh_interval": "5s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "bulletinId": {
+          "type": "keyword"
+        },
+        "bulletinTimestamp": {
+          "type": "date"
+        },
+        "bulletinLevel": {
+          "type": "keyword"
+        },
+        "bulletinMessage": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "bulletinSourceName": {
+          "type": "keyword"
+        },
+        "bulletinSourceType": {
+          "type": "keyword"
+        },
+        "bulletinSourceId": {
+          "type": "keyword"
+        },
+        "bulletinGroupId": {
+          "type": "keyword"
+        },
+        "bulletinGroupName": {
+          "type": "keyword"
+        },
+        "bulletinCategory": {
+          "type": "keyword"
+        },
+        "bulletinNodeAddress": {
+          "type": "keyword"
+        },
+        "severityScore": {
+          "type": "integer"
+        },
+        "errorCategory": {
+          "type": "keyword"
+        },
+        "extractedPort": {
+          "type": "integer"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "cluster": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "version": 1,
+  "_meta": {
+    "description": "Template for NiFi bulletin data - captures errors, warnings and info messages every 10 seconds"
+  }
+}

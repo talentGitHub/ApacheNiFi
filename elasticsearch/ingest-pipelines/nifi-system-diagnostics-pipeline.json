@@ -1,0 +1,40 @@
+{
+  "description": "Enrichment pipeline for NiFi system diagnostics - normalizes percentages and parses nested structures",
+  "processors": [
+    {
+      "script": {
+        "description": "Calculate heap utilization percentage",
+        "lang": "painless",
+        "source": "if (ctx.usedHeapBytes != null && ctx.maxHeapBytes != null && ctx.maxHeapBytes > 0) { ctx.heapUtilization = (ctx.usedHeapBytes / (double)ctx.maxHeapBytes) * 100.0; }"
+      }
+    },
+    {
+      "script": {
+        "description": "Calculate storage utilization percentages",
+        "lang": "painless",
+        "source": "if (ctx.storageUsage != null) { for (storage in ctx.storageUsage) { if (storage.usedBytes != null && storage.totalBytes != null && storage.totalBytes > 0) { storage.utilizationPercent = (storage.usedBytes / (double)storage.totalBytes) * 100.0; } } }"
+      }
+    },
+    {
+      "script": {
+        "description": "Calculate GC metrics",
+        "lang": "painless",
+        "source": "if (ctx.gcStats != null) { if (ctx.gcStats.collectionCount != null && ctx.gcStats.collectionMillis != null && ctx.gcStats.collectionCount > 0) { ctx.gcStats.avgCollectionDuration = ctx.gcStats.collectionMillis / (double)ctx.gcStats.collectionCount; } }"
+      }
+    },
+    {
+      "set": {
+        "field": "@timestamp",
+        "value": "{{_ingest.timestamp}}"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "_ingest.error",
+        "value": "{{ _ingest.on_failure_message }}"
+      }
+    }
+  ]
+}

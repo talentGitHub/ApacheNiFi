@@ -1,0 +1,99 @@
+{
+  "index_patterns": ["nifi-system-diagnostics-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-system-diagnostics-ilm-policy",
+      "index.lifecycle.rollover_alias": "nifi-system-diagnostics",
+      "refresh_interval": "30s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "nodeId": {
+          "type": "keyword"
+        },
+        "nodeAddress": {
+          "type": "keyword"
+        },
+        "heapUtilization": {
+          "type": "float"
+        },
+        "usedHeapBytes": {
+          "type": "long"
+        },
+        "maxHeapBytes": {
+          "type": "long"
+        },
+        "usedNonHeapBytes": {
+          "type": "long"
+        },
+        "maxNonHeapBytes": {
+          "type": "long"
+        },
+        "totalThreads": {
+          "type": "integer"
+        },
+        "daemonThreads": {
+          "type": "integer"
+        },
+        "processorLoadAverage": {
+          "type": "float"
+        },
+        "availableProcessors": {
+          "type": "integer"
+        },
+        "gcStats": {
+          "properties": {
+            "collectionCount": {
+              "type": "long"
+            },
+            "collectionMillis": {
+              "type": "long"
+            },
+            "collectionRate": {
+              "type": "float"
+            },
+            "avgCollectionDuration": {
+              "type": "float"
+            }
+          }
+        },
+        "storageUsage": {
+          "type": "nested",
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "usedBytes": {
+              "type": "long"
+            },
+            "totalBytes": {
+              "type": "long"
+            },
+            "utilizationPercent": {
+              "type": "float"
+            }
+          }
+        },
+        "uptime": {
+          "type": "long"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "cluster": {
+          "type": "keyword"
+        }
+      }
+    }
+  },
+  "priority": 100,
+  "version": 1,
+  "_meta": {
+    "description": "Template for NiFi system diagnostics - JVM health, memory, CPU, storage metrics collected every 1 minute"
+  }
+}
