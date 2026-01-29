@@ -26,7 +26,7 @@ This platform provides comprehensive observability for Apache NiFi deployments, 
           └──────────────────┼──────────────────┘
                              ▼
 ┌─────────────────────────────────────────────────────────────┐
-│               Elasticsearch Cloud (8.x)                      │
+│               Elasticsearch Cloud (8.19.7)                   │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ Index Templates │ ILM Policies │ Ingest Pipelines  │   │
 │  └─────────────────────────────────────────────────────┘   │
@@ -36,7 +36,7 @@ This platform provides comprehensive observability for Apache NiFi deployments, 
 └─────────────────────────┬───────────────────────────────────┘
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    Kibana (8.x)                              │
+│                    Kibana (8.19.7)                           │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐     │
 │  │  Dashboards  │  │   Alerts     │  │    Canvas    │     │
 │  │   (7 sets)   │  │  (7 rules)   │  │  (Reports)   │     │
@@ -76,8 +76,8 @@ This platform provides comprehensive observability for Apache NiFi deployments, 
 ### Prerequisites
 
 - Apache NiFi 1.23.2+ running
-- Elasticsearch Cloud 8.x deployment
-- Kibana 8.x access
+- Elasticsearch Cloud 8.19.7 deployment
+- Kibana 8.19.7 access
 - Python 3.11+ (for LLM service)
 - Bash shell (for deployment scripts)
 
