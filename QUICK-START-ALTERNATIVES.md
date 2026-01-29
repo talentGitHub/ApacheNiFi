@@ -77,8 +77,8 @@ See [ALTERNATIVES.md - Superset Section](ALTERNATIVES.md#2--apache-superset) for
 
 **Get Started**:
 ```bash
-docker run -d -p 3000:3000 metabase/metabase
-# Access: http://localhost:3000
+docker run -d -p 3001:3000 metabase/metabase
+# Access: http://localhost:3001
 # Add Elasticsearch via JDBC
 ```
 

@@ -261,7 +261,7 @@ SELECT
   bulletinSourceName as source,
   bulletinCategory as category
 FROM "nifi-bulletins-*"
-WHERE "@timestamp" >= NOW() - INTERVAL '7 days'
+WHERE "@timestamp" >= NOW() - 7 * 24 * 60 * 60 * 1000  -- 7 days in milliseconds
 ```
 
 #### Build Dashboards
@@ -341,27 +341,31 @@ es = Elasticsearch(['https://your-cluster.es.cloud.io:9243'],
 
 def collect_metrics():
     # Heap utilization
-    result = es.search(index='nifi-system-diagnostics-*',
-                      body={'query': {'match_all': {}},
-                            'size': 1,
-                            'sort': [{'@timestamp': 'desc'}]})
+    result = es.search(
+        index='nifi-system-diagnostics-*',
+        query={'match_all': {}},
+        size=1,
+        sort=[{'@timestamp': 'desc'}]
+    )
     if result['hits']['hits']:
         heap_utilization.set(result['hits']['hits'][0]['_source']['heapUtilization'])
     
     # Error count (last 5 min)
-    result = es.count(index='nifi-bulletins-*',
-                     body={'query': {
-                         'bool': {
-                             'must': [
-                                 {'term': {'bulletinLevel': 'ERROR'}},
-                                 {'range': {'@timestamp': {'gte': 'now-5m'}}}
-                             ]
-                         }
-                     }})
+    result = es.count(
+        index='nifi-bulletins-*',
+        query={
+            'bool': {
+                'must': [
+                    {'term': {'bulletinLevel': 'ERROR'}},
+                    {'range': {'@timestamp': {'gte': 'now-5m'}}}
+                ]
+            }
+        }
+    )
     error_count.set(result['count'])
 
 if __name__ == '__main__':
-    start_http_server(9090)
+    start_http_server(9091)  # Use 9091 to avoid conflict with Prometheus on 9090
     while True:
         collect_metrics()
         time.sleep(15)  # Scrape every 15 seconds
@@ -378,7 +382,7 @@ global:
 scrape_configs:
   - job_name: 'nifi'
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ['localhost:9091']  # NiFi exporter port
         labels:
           environment: 'production'
 ```
@@ -489,7 +493,7 @@ cd setup
 SELECT bulletinMessage, COUNT(*) as count
 FROM "nifi-bulletins-*"
 WHERE bulletinLevel = 'ERROR'
-  AND "@timestamp" >= CURRENT_DATE
+  AND "@timestamp" >= NOW() - 24 * 60 * 60 * 1000  -- Today (24 hours ago)
 GROUP BY bulletinMessage
 ORDER BY count DESC
 LIMIT 10
@@ -534,11 +538,9 @@ function HeapUtilizationChart() {
     const fetchData = async () => {
       const result = await client.search({
         index: 'nifi-system-diagnostics-*',
-        body: {
-          query: { range: { '@timestamp': { gte: 'now-1h' }}},
-          sort: [{ '@timestamp': 'asc' }],
-          size: 100
-        }
+        query: { range: { '@timestamp': { gte: 'now-1h' }}},
+        sort: [{ '@timestamp': 'asc' }],
+        size: 100
       });
       
       const chartData = result.hits.hits.map(hit => ({
@@ -595,10 +597,16 @@ app.layout = html.Div([
 def update_heap_gauge(n):
     result = es.search(
         index='nifi-system-diagnostics-*',
-        body={'query': {'match_all': {}}, 'size': 1, 'sort': [{'@timestamp': 'desc'}]}
+        query={'match_all': {}},
+        size=1,
+        sort=[{'@timestamp': 'desc'}]
     )
     
-    heap = result['hits']['hits'][0]['_source']['heapUtilization']
+    # Handle case when no results are returned
+    if not result['hits']['hits']:
+        heap = 0
+    else:
+        heap = result['hits']['hits'][0]['_source']['heapUtilization']
     
     fig = go.Figure(go.Indicator(
         mode='gauge+number',
@@ -653,10 +661,8 @@ es = Elasticsearch(['https://your-cluster.es.cloud.io:9243'],
 # Cell 2: Fetch and analyze bulletins
 result = es.search(
     index='nifi-bulletins-*',
-    body={
-        'query': {'range': {'@timestamp': {'gte': 'now-7d'}}},
-        'size': 10000
-    }
+    query={'range': {'@timestamp': {'gte': 'now-7d'}}},
+    size=10000
 )
 
 df = pd.DataFrame([hit['_source'] for hit in result['hits']['hits']])
