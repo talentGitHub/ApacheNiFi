@@ -1,0 +1,93 @@
+{
+  "index_patterns": ["nifi-flow-performance-*"],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-flow-performance-ilm-policy",
+      "index.lifecycle.rollover_alias": "nifi-flow-performance",
+      "refresh_interval": "30s",
+      "codec": "best_compression"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "componentId": {
+          "type": "keyword"
+        },
+        "componentName": {
+          "type": "keyword"
+        },
+        "componentType": {
+          "type": "keyword"
+        },
+        "processorType": {
+          "type": "keyword"
+        },
+        "processGroupId": {
+          "type": "keyword"
+        },
+        "processGroupName": {
+          "type": "keyword"
+        },
+        "runStatus": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "cluster": {
+          "type": "keyword"
+        },
+        "bytesRead": {
+          "type": "long"
+        },
+        "bytesWritten": {
+          "type": "long"
+        },
+        "bytesTransferred": {
+          "type": "long"
+        },
+        "inputCount": {
+          "type": "long"
+        },
+        "outputCount": {
+          "type": "long"
+        },
+        "invocations": {
+          "type": "long"
+        },
+        "processingNanos": {
+          "type": "long"
+        },
+        "averageLineageDuration": {
+          "type": "long"
+        },
+        "queuedCount": {
+          "type": "long"
+        },
+        "queuedBytes": {
+          "type": "long"
+        },
+        "backPressureObjectThreshold": {
+          "type": "long"
+        },
+        "backPressureBytesThreshold": {
+          "type": "long"
+        },
+        "queueUtilizationPercent": {
+          "type": "float"
+        },
+        "throughputBytesPerSecond": {
+          "type": "float"
+        },
+        "processingEfficiency": {
+          "type": "float"
+        }
+      }
+    }
+  }
+}

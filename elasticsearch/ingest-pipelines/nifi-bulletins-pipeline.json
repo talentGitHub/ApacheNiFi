@@ -1,0 +1,71 @@
+{
+  "description": "Enrich bulletin data with severity scoring, error categorization, and port extraction",
+  "processors": [
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 1,
+        "if": "ctx.bulletinLevel == 'INFO'"
+      }
+    },
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 2,
+        "if": "ctx.bulletinLevel == 'WARN' || ctx.bulletinLevel == 'WARNING'"
+      }
+    },
+    {
+      "set": {
+        "field": "severityScore",
+        "value": 3,
+        "if": "ctx.bulletinLevel == 'ERROR'"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.bulletinMessage.contains('Address already in use')) { ctx.errorCategory = 'PORT_CONFLICT'; } else if (ctx.bulletinMessage.contains('OutOfMemoryError') || ctx.bulletinMessage.contains('heap')) { ctx.errorCategory = 'MEMORY_ERROR'; } else if (ctx.bulletinMessage.contains('Connection refused') || ctx.bulletinMessage.contains('timeout')) { ctx.errorCategory = 'CONNECTION_ERROR'; } else if (ctx.bulletinMessage.contains('Invalid') || ctx.bulletinMessage.contains('validation')) { ctx.errorCategory = 'VALIDATION_ERROR'; } else if (ctx.bulletinMessage.contains('DistributedMapCacheServer')) { ctx.errorCategory = 'CACHE_SERVER_ERROR'; } else { ctx.errorCategory = 'GENERAL_ERROR'; }"
+      }
+    },
+    {
+      "grok": {
+        "field": "bulletinMessage",
+        "patterns": [
+          ".*port %{NUMBER:extractedPort:int}.*",
+          ".*:%{NUMBER:extractedPort:int}.*"
+        ],
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "environment",
+        "value": "production",
+        "if": "ctx.environment == null"
+      }
+    },
+    {
+      "set": {
+        "field": "cluster",
+        "value": "default",
+        "if": "ctx.cluster == null"
+      }
+    },
+    {
+      "date": {
+        "field": "@timestamp",
+        "formats": ["ISO8601"],
+        "target_field": "@timestamp"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "pipeline_error",
+        "value": "Failed to process bulletin"
+      }
+    }
+  ]
+}

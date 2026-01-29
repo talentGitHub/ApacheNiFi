@@ -1,0 +1,77 @@
+{
+  "job_id": "nifi-processing-anomaly",
+  "description": "Detects unusual processor execution times and abnormal invocation counts",
+  "analysis_config": {
+    "bucket_span": "15m",
+    "detectors": [
+      {
+        "detector_description": "High mean processing time",
+        "function": "high_mean",
+        "field_name": "processingNanos",
+        "partition_field_name": "processorType"
+      },
+      {
+        "detector_description": "Low mean processing time",
+        "function": "low_mean",
+        "field_name": "processingNanos",
+        "partition_field_name": "processorType"
+      },
+      {
+        "detector_description": "High invocation count",
+        "function": "high_count",
+        "field_name": "invocations",
+        "partition_field_name": "processorType"
+      },
+      {
+        "detector_description": "Low invocation count",
+        "function": "low_count",
+        "field_name": "invocations",
+        "partition_field_name": "processorType"
+      }
+    ],
+    "influencers": [
+      "processorType",
+      "componentName",
+      "environment"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "512mb"
+  },
+  "model_plot_config": {
+    "enabled": true,
+    "annotations_enabled": true
+  },
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-processing-anomaly",
+    "job_id": "nifi-processing-anomaly",
+    "indices": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "exists": {
+              "field": "processingNanos"
+            }
+          },
+          {
+            "range": {
+              "processingNanos": {
+                "gt": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    "scroll_size": 1000,
+    "frequency": "5m",
+    "query_delay": "60s"
+  }
+}

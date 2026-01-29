@@ -1,0 +1,72 @@
+{
+  "index_patterns": ["nifi-bulletins-*"],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-bulletins-ilm-policy",
+      "index.lifecycle.rollover_alias": "nifi-bulletins",
+      "refresh_interval": "5s",
+      "codec": "best_compression"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "bulletinId": {
+          "type": "keyword"
+        },
+        "bulletinLevel": {
+          "type": "keyword"
+        },
+        "bulletinMessage": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "bulletinCategory": {
+          "type": "keyword"
+        },
+        "bulletinGroupId": {
+          "type": "keyword"
+        },
+        "bulletinGroupName": {
+          "type": "keyword"
+        },
+        "bulletinSourceId": {
+          "type": "keyword"
+        },
+        "bulletinSourceName": {
+          "type": "keyword"
+        },
+        "bulletinSourceType": {
+          "type": "keyword"
+        },
+        "bulletinNodeAddress": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "cluster": {
+          "type": "keyword"
+        },
+        "severityScore": {
+          "type": "integer"
+        },
+        "errorCategory": {
+          "type": "keyword"
+        },
+        "extractedPort": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,344 @@
+{
+  "version": "8.11.0",
+  "objects": [
+    {
+      "id": "nifi-bulletin-deep-dive",
+      "type": "dashboard",
+      "attributes": {
+        "title": "NiFi Bulletin Deep Dive",
+        "description": "Comprehensive error analysis and troubleshooting with bulletin breakdown, error distribution, and time patterns",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"filter\":[]}"
+        },
+        "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"hidePanelTitles\":false}",
+        "panelsJSON": "[{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":0,\"w\":24,\"h\":10,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{\"title\":\"Bulletins Over Time\"},\"panelRefName\":\"panel_1\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":24,\"y\":0,\"w\":24,\"h\":10,\"i\":\"2\"},\"panelIndex\":\"2\",\"embeddableConfig\":{\"title\":\"Top 10 Error Messages\"},\"panelRefName\":\"panel_2\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":10,\"w\":16,\"h\":10,\"i\":\"3\"},\"panelIndex\":\"3\",\"embeddableConfig\":{\"title\":\"Error Distribution by Category\"},\"panelRefName\":\"panel_3\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":16,\"y\":10,\"w\":32,\"h\":10,\"i\":\"4\"},\"panelIndex\":\"4\",\"embeddableConfig\":{\"title\":\"Time-based Patterns (Hour × Day Heatmap)\"},\"panelRefName\":\"panel_4\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":20,\"w\":48,\"h\":15,\"i\":\"5\"},\"panelIndex\":\"5\",\"embeddableConfig\":{\"title\":\"Live Bulletin Stream\"},\"panelRefName\":\"panel_5\"}]",
+        "timeRestore": false,
+        "version": 1
+      }
+    },
+    {
+      "id": "bulletins-over-time",
+      "type": "lens",
+      "attributes": {
+        "title": "Bulletins Over Time",
+        "visualizationType": "lnsXY",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "ERROR",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___",
+                      "filter": {
+                        "query": "bulletinLevel: ERROR",
+                        "language": "kuery"
+                      }
+                    },
+                    "col3": {
+                      "label": "WARN",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___",
+                      "filter": {
+                        "query": "bulletinLevel: WARN OR bulletinLevel: WARNING",
+                        "language": "kuery"
+                      }
+                    },
+                    "col4": {
+                      "label": "INFO",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___",
+                      "filter": {
+                        "query": "bulletinLevel: INFO",
+                        "language": "kuery"
+                      }
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3", "col4"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "legend": {
+              "isVisible": true,
+              "position": "right"
+            },
+            "valueLabels": "hide",
+            "fittingFunction": "None",
+            "layers": [
+              {
+                "layerId": "layer1",
+                "accessors": ["col2", "col3", "col4"],
+                "position": "top",
+                "seriesType": "bar_stacked",
+                "xAccessor": "col1"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "top-10-error-messages",
+      "type": "lens",
+      "attributes": {
+        "title": "Top 10 Error Messages",
+        "visualizationType": "lnsDatatable",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Error Message",
+                      "dataType": "string",
+                      "operationType": "terms",
+                      "sourceField": "bulletinMessage.keyword",
+                      "params": {
+                        "size": 10,
+                        "orderBy": {
+                          "type": "column",
+                          "columnId": "col2"
+                        },
+                        "orderDirection": "desc"
+                      }
+                    },
+                    "col2": {
+                      "label": "Count",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___"
+                    },
+                    "col3": {
+                      "label": "Category",
+                      "dataType": "string",
+                      "operationType": "terms",
+                      "sourceField": "errorCategory",
+                      "params": {
+                        "size": 1
+                      }
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "columns": [
+              {
+                "columnId": "col1",
+                "width": 500
+              },
+              {
+                "columnId": "col2"
+              },
+              {
+                "columnId": "col3"
+              }
+            ]
+          },
+          "query": {
+            "query": "bulletinLevel: ERROR",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "error-distribution-by-category",
+      "type": "lens",
+      "attributes": {
+        "title": "Error Distribution by Category",
+        "visualizationType": "lnsPie",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Error Category",
+                      "dataType": "string",
+                      "operationType": "terms",
+                      "sourceField": "errorCategory",
+                      "params": {
+                        "size": 10,
+                        "orderBy": {
+                          "type": "column",
+                          "columnId": "col2"
+                        },
+                        "orderDirection": "desc"
+                      }
+                    },
+                    "col2": {
+                      "label": "Count",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "shape": "donut",
+            "layers": [
+              {
+                "layerId": "layer1",
+                "primaryGroups": ["col1"],
+                "metrics": ["col2"],
+                "numberDisplay": "percent",
+                "categoryDisplay": "default",
+                "legendDisplay": "show",
+                "nestedLegend": false
+              }
+            ]
+          },
+          "query": {
+            "query": "bulletinLevel: ERROR",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "time-based-patterns-heatmap",
+      "type": "lens",
+      "attributes": {
+        "title": "Time-based Patterns (Hour × Day Heatmap)",
+        "visualizationType": "lnsHeatmap",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Hour of Day",
+                      "dataType": "number",
+                      "operationType": "formula",
+                      "params": {
+                        "formula": "hour(@timestamp)"
+                      }
+                    },
+                    "col2": {
+                      "label": "Day of Week",
+                      "dataType": "number",
+                      "operationType": "formula",
+                      "params": {
+                        "formula": "dayofweek(@timestamp)"
+                      }
+                    },
+                    "col3": {
+                      "label": "Error Count",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "xAccessor": "col1",
+            "yAccessor": "col2",
+            "valueAccessor": "col3"
+          },
+          "query": {
+            "query": "bulletinLevel: ERROR",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "live-bulletin-stream",
+      "type": "search",
+      "attributes": {
+        "title": "Live Bulletin Stream",
+        "description": "Real-time bulletin stream with search capability",
+        "hits": 0,
+        "columns": [
+          "@timestamp",
+          "bulletinLevel",
+          "bulletinSourceName",
+          "bulletinMessage",
+          "errorCategory"
+        ],
+        "sort": [
+          [
+            "@timestamp",
+            "desc"
+          ]
+        ],
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"index\":\"nifi-bulletins-*\",\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[],\"highlightAll\":true,\"version\":true}"
+        }
+      }
+    }
+  ]
+}

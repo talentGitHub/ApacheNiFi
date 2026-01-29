@@ -1,0 +1,260 @@
+{
+  "rules": [
+    {
+      "id": "nifi-critical-error-alert",
+      "name": "NiFi Critical Error Alert",
+      "tags": ["nifi", "critical", "p1"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-bulletins-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"must\":[{\"term\":{\"bulletinLevel\":\"ERROR\"}},{\"terms\":{\"bulletinSourceType\":[\"DistributedMapCacheServer\",\"StandardProcessScheduler\",\"Controller\"]}}],\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-5m\"}}}}}}",
+        "size": 100,
+        "thresholdComparator": ">",
+        "threshold": [3],
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "1m"
+      },
+      "actions": [
+        {
+          "id": "slack-critical",
+          "group": "query matched",
+          "params": {
+            "message": "🚨 Critical NiFi Error Alert\n*Source*: {{context.source}}\n*Message*: {{context.message}}\n*Count*: {{context.hits}} in 5 minutes\n*Environment*: {{context.environment}}\n*Time*: {{context.date}}"
+          }
+        },
+        {
+          "id": "pagerduty-critical",
+          "group": "query matched",
+          "params": {
+            "severity": "critical",
+            "eventAction": "trigger",
+            "summary": "NiFi Critical Error: {{context.hits}} errors from critical services"
+          }
+        }
+      ],
+      "notify_when": "onActionGroupChange",
+      "throttle": "5m"
+    },
+    {
+      "id": "nifi-jvm-memory-critical",
+      "name": "NiFi JVM Memory Critical",
+      "tags": ["nifi", "memory", "p2"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-system-diagnostics-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"must\":{\"range\":{\"heapUtilization\":{\"gte\":85}}},\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-5m\"}}}}}}",
+        "size": 100,
+        "thresholdComparator": ">",
+        "threshold": [0],
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m",
+        "aggType": "count"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "1m"
+      },
+      "actions": [
+        {
+          "id": "slack-infrastructure",
+          "group": "query matched",
+          "params": {
+            "message": "⚠️ NiFi JVM Memory Critical\n*Heap Utilization*: {{context.heapUtilization}}%\n*Used*: {{context.usedHeapBytes}} bytes\n*Max*: {{context.maxHeapBytes}} bytes\n*Node*: {{context.clusterNodeAddress}}\n*Environment*: {{context.environment}}"
+          }
+        },
+        {
+          "id": "email-ops",
+          "group": "query matched",
+          "params": {
+            "to": ["ops-team@company.com"],
+            "subject": "NiFi Memory Alert - {{context.environment}}",
+            "message": "JVM heap utilization has exceeded 85% for 5 minutes."
+          }
+        }
+      ],
+      "notify_when": "onActionGroupChange",
+      "throttle": "10m"
+    },
+    {
+      "id": "nifi-port-binding-failure",
+      "name": "NiFi Port Binding Failure",
+      "tags": ["nifi", "port", "p1"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-bulletins-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"must\":[{\"term\":{\"bulletinLevel\":\"ERROR\"}},{\"match_phrase\":{\"bulletinMessage\":\"Address already in use\"}}],\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-1m\"}}}}}}",
+        "size": 100,
+        "thresholdComparator": ">",
+        "threshold": [0],
+        "timeWindowSize": 1,
+        "timeWindowUnit": "m"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "30s"
+      },
+      "actions": [
+        {
+          "id": "slack-critical",
+          "group": "query matched",
+          "params": {
+            "message": "🔴 NiFi Port Binding Failure\n*Component*: {{context.bulletinSourceName}}\n*Port*: {{context.extractedPort}}\n*Message*: {{context.bulletinMessage}}\n*Environment*: {{context.environment}}\n*Immediate Action Required*"
+          }
+        },
+        {
+          "id": "webhook-remediation",
+          "group": "query matched",
+          "params": {
+            "method": "post",
+            "url": "http://localhost:5000/remediate",
+            "body": "{\"alert_type\":\"port_conflict\",\"port\":\"{{context.extractedPort}}\",\"component\":\"{{context.bulletinSourceName}}\"}"
+          }
+        }
+      ],
+      "notify_when": "onActiveAlert",
+      "throttle": null
+    },
+    {
+      "id": "nifi-processor-invalid-state",
+      "name": "NiFi Processor Invalid State",
+      "tags": ["nifi", "processor", "p2"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-flow-performance-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"must\":{\"term\":{\"runStatus\":\"Invalid\"}},\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-5m\"}}}}}}",
+        "size": 100,
+        "thresholdComparator": ">",
+        "threshold": [0],
+        "timeWindowSize": 5,
+        "timeWindowUnit": "m"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "1m"
+      },
+      "actions": [
+        {
+          "id": "slack-alerts",
+          "group": "query matched",
+          "params": {
+            "message": "⚠️ NiFi Processor Invalid State\n*Processor*: {{context.componentName}}\n*Type*: {{context.processorType}}\n*Process Group*: {{context.processGroupName}}\n*Environment*: {{context.environment}}"
+          }
+        }
+      ],
+      "notify_when": "onActionGroupChange",
+      "throttle": "5m"
+    },
+    {
+      "id": "nifi-queue-backpressure-warning",
+      "name": "NiFi Queue Backpressure Warning",
+      "tags": ["nifi", "queue", "p3"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-flow-performance-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"must\":{\"range\":{\"queueUtilizationPercent\":{\"gte\":80}}},\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-10m\"}}}}}}",
+        "size": 100,
+        "thresholdComparator": ">",
+        "threshold": [0],
+        "timeWindowSize": 10,
+        "timeWindowUnit": "m"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "2m"
+      },
+      "actions": [
+        {
+          "id": "slack-alerts",
+          "group": "query matched",
+          "params": {
+            "message": "📊 NiFi Queue Backpressure Warning\n*Component*: {{context.componentName}}\n*Utilization*: {{context.queueUtilizationPercent}}%\n*Queued*: {{context.queuedCount}} items\n*Environment*: {{context.environment}}"
+          }
+        }
+      ],
+      "notify_when": "onActionGroupChange",
+      "throttle": "15m"
+    },
+    {
+      "id": "nifi-storage-capacity-warning",
+      "name": "NiFi Storage Capacity Warning",
+      "tags": ["nifi", "storage", "p3"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-system-diagnostics-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"must\":{\"range\":{\"storageUsage.utilizationPercent\":{\"gte\":85}}},\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-15m\"}}}}}}",
+        "size": 100,
+        "thresholdComparator": ">",
+        "threshold": [0],
+        "timeWindowSize": 15,
+        "timeWindowUnit": "m"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "5m"
+      },
+      "actions": [
+        {
+          "id": "slack-infrastructure",
+          "group": "query matched",
+          "params": {
+            "message": "💾 NiFi Storage Capacity Warning\n*Repository*: {{context.storageName}}\n*Utilization*: {{context.storageUtilization}}%\n*Used*: {{context.usedSpaceBytes}} bytes\n*Total*: {{context.totalSpaceBytes}} bytes\n*Node*: {{context.clusterNodeAddress}}"
+          }
+        },
+        {
+          "id": "email-infrastructure",
+          "group": "query matched",
+          "params": {
+            "to": ["infrastructure-team@company.com"],
+            "subject": "NiFi Storage Alert - {{context.environment}}",
+            "message": "Storage utilization has exceeded 85% for 15 minutes."
+          }
+        }
+      ],
+      "notify_when": "onActionGroupChange",
+      "throttle": "30m"
+    },
+    {
+      "id": "nifi-gc-pause-time-high",
+      "name": "NiFi GC Pause Time High",
+      "tags": ["nifi", "gc", "p3"],
+      "rule_type_id": ".es-query",
+      "params": {
+        "index": ["nifi-system-diagnostics-*"],
+        "timeField": "@timestamp",
+        "esQuery": "{\"query\":{\"bool\":{\"filter\":{\"range\":{\"@timestamp\":{\"gte\":\"now-10m\"}}}}},\"aggs\":{\"avg_gc_duration\":{\"avg\":{\"field\":\"gcStats.collectionMillis\"}}}}",
+        "size": 0,
+        "thresholdComparator": ">",
+        "threshold": [500],
+        "timeWindowSize": 10,
+        "timeWindowUnit": "m",
+        "aggType": "avg",
+        "aggField": "gcStats.collectionMillis"
+      },
+      "consumer": "alerts",
+      "schedule": {
+        "interval": "5m"
+      },
+      "actions": [
+        {
+          "id": "slack-infrastructure",
+          "group": "query matched",
+          "params": {
+            "message": "🔧 NiFi GC Pause Time High\n*Average GC Duration*: {{context.avgGcDuration}}ms\n*Threshold*: 500ms\n*Node*: {{context.clusterNodeAddress}}\n*Environment*: {{context.environment}}"
+          }
+        }
+      ],
+      "notify_when": "onActionGroupChange",
+      "throttle": "20m"
+    }
+  ]
+}

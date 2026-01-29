@@ -1,0 +1,22 @@
+# Elasticsearch Cloud Configuration
+# Copy this file to elasticsearch-cloud.yaml and fill in your credentials
+
+# Elasticsearch Cloud ID (found in Elastic Cloud Console)
+cloud_id: "your-deployment-name:dXMtZWFzdC0xLmF3cy5mb3VuZC5pbyRjZWY4..."
+
+# API Key for authentication (create in Kibana -> Stack Management -> API Keys)
+api_key: "your-base64-encoded-api-key"
+
+# Kibana URL (optional - auto-detected from cloud_id if not provided)
+kibana_url: "https://your-deployment.kb.us-east-1.aws.found.io"
+
+# Environment settings
+environment: "production"
+cluster_name: "default"
+
+# Optional: Elasticsearch direct URL (alternative to cloud_id)
+# elasticsearch_url: "https://your-cluster.es.us-east-1.aws.found.io:9200"
+
+# Optional: Basic Auth (alternative to api_key)
+# username: "elastic"
+# password: "your-password"

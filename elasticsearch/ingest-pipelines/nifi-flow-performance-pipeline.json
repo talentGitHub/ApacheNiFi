@@ -1,0 +1,52 @@
+{
+  "description": "Enrich flow performance with processing efficiency, queue utilization, and throughput calculations",
+  "processors": [
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.queuedCount != null && ctx.backPressureObjectThreshold != null && ctx.backPressureObjectThreshold > 0) { ctx.queueUtilizationPercent = (float)(ctx.queuedCount * 100.0 / ctx.backPressureObjectThreshold); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.bytesTransferred != null && ctx.processingNanos != null && ctx.processingNanos > 0) { ctx.throughputBytesPerSecond = (float)(ctx.bytesTransferred * 1000000000.0 / ctx.processingNanos); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.invocations != null && ctx.processingNanos != null && ctx.invocations > 0 && ctx.processingNanos > 0) { ctx.processingEfficiency = (float)(ctx.bytesTransferred / (ctx.processingNanos / 1000000.0)); }"
+      }
+    },
+    {
+      "set": {
+        "field": "environment",
+        "value": "production",
+        "if": "ctx.environment == null"
+      }
+    },
+    {
+      "set": {
+        "field": "cluster",
+        "value": "default",
+        "if": "ctx.cluster == null"
+      }
+    },
+    {
+      "date": {
+        "field": "@timestamp",
+        "formats": ["ISO8601"],
+        "target_field": "@timestamp"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "pipeline_error",
+        "value": "Failed to process flow performance"
+      }
+    }
+  ]
+}
