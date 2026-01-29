@@ -5,8 +5,28 @@
 #
 # Usage: ./validate-setup.sh [KIBANA_URL] [ES_URL]
 #
+# Requirements:
+#   - curl (for API calls)
+#   - python3 (for JSON parsing)
+#
+# Security Note: Credentials are prompted interactively to avoid exposure
+# in command history or process lists.
+#
 
 set -e
+
+# Check prerequisites
+if ! command -v python3 &> /dev/null; then
+    echo "Error: python3 is required but not installed."
+    echo "Please install Python 3 and try again."
+    exit 1
+fi
+
+if ! command -v curl &> /dev/null; then
+    echo "Error: curl is required but not installed."
+    echo "Please install curl and try again."
+    exit 1
+fi
 
 # Colors
 RED='\033[0;31m'
@@ -127,9 +147,6 @@ if [ "$SAMPLE_DOC" = "{}" ]; then
 else
     # Check each required field
     for field in "${REQUIRED_FIELDS[@]}"; do
-        # Convert field path to jq query
-        jq_query=$(echo "$field" | sed 's/\././g')
-        
         FIELD_EXISTS=$(echo "$SAMPLE_DOC" | python3 -c "
 import sys, json
 try:

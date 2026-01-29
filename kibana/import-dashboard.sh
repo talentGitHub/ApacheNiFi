@@ -7,6 +7,10 @@
 #
 # Example: ./import-dashboard.sh https://my-kibana.kb.cloud
 #
+# Security Note: Credentials are prompted interactively to avoid exposure
+# in command history or process lists. For automated imports, consider
+# using API keys instead of username/password authentication.
+#
 
 set -e
 
@@ -105,10 +109,11 @@ else
     echo "Response:"
     echo "$BODY" | python3 -m json.tool 2>/dev/null || echo "$BODY"
     echo
-    echo -e "${YELLOW}Troubleshooting:${NC}"
+    echo -e "${RED}Troubleshooting:${NC}"
     echo "- Verify your Kibana URL is correct"
     echo "- Check your credentials"
-    echo "- Ensure you have 'kibana_admin' or appropriate permissions"
+    echo "- Ensure you have 'kibana_admin' role or saved objects write permissions"
+    echo "  (Contact your Elasticsearch administrator to verify permissions)"
     echo "- Review the Kibana logs for more details"
     exit 1
 fi
