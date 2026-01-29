@@ -97,6 +97,7 @@ cp config/elasticsearch-cloud.yaml.example config/elasticsearch-cloud.yaml
 
 # 4. Import Kibana dashboards
 ./scripts/setup-kibana.sh
+# For detailed setup instructions, see docs/KIBANA-QUICK-START.md
 
 # 5. Deploy ML jobs and transforms
 ./scripts/deploy-ml-jobs.sh
@@ -355,6 +356,8 @@ All automated actions are logged to `nifi-remediation-audit` index:
 
 ## 📚 Documentation
 
+- **[Kibana Quick Start](docs/KIBANA-QUICK-START.md)**: 5-minute guide to set up Kibana dashboards
+- **[Kibana Setup Guide](docs/KIBANA-SETUP-GUIDE.md)**: Comprehensive Kibana dashboard setup and configuration
 - **[Deployment Guide](docs/DEPLOYMENT-GUIDE.md)**: Step-by-step installation instructions
 - **[Architecture](docs/ARCHITECTURE.md)**: System design and component interactions
 - **[User Guide](docs/USER-GUIDE.md)**: Dashboard usage and navigation
