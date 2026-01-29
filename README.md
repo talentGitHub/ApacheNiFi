@@ -6,11 +6,12 @@
 
 This platform provides comprehensive observability for Apache NiFi deployments, featuring:
 
-- **Real-time Monitoring**: 7 production-ready Kibana dashboards with 50+ visualizations
+- **Real-time Monitoring**: 7 production-ready dashboards with 50+ visualizations (Kibana by default, [other options available](ALTERNATIVES.md))
 - **Machine Learning**: Anomaly detection, predictive analytics, and capacity forecasting
 - **Intelligent Alerting**: 7 critical alerting rules with multi-channel notifications
 - **AI-Powered Analysis**: LLM integration for root cause analysis and remediation recommendations
 - **Auto-Remediation**: Self-healing workflows for common issues
+- **Flexible Visualization**: Works with Kibana, Grafana, Apache Superset, and more ([see alternatives](ALTERNATIVES.md))
 
 ## 🏗️ Architecture
 
@@ -77,9 +78,11 @@ This platform provides comprehensive observability for Apache NiFi deployments, 
 
 - Apache NiFi 1.23.2+ running
 - Elasticsearch Cloud 8.x deployment
-- Kibana 8.x access
+- Kibana 8.x access (or see [ALTERNATIVES.md](ALTERNATIVES.md) for other visualization options)
 - Python 3.11+ (for LLM service)
 - Bash shell (for deployment scripts)
+
+> **💡 Looking for alternatives to Kibana?** Check out [ALTERNATIVES.md](ALTERNATIVES.md) for detailed guides on using Grafana, Apache Superset, Prometheus, Metabase, and other visualization platforms with this observability stack.
 
 ### Installation
 
@@ -355,6 +358,7 @@ All automated actions are logged to `nifi-remediation-audit` index:
 
 ## 📚 Documentation
 
+- **[Alternatives to Kibana](ALTERNATIVES.md)**: Comprehensive guide to alternative visualization platforms (Grafana, Superset, Prometheus, etc.)
 - **[Deployment Guide](docs/DEPLOYMENT-GUIDE.md)**: Step-by-step installation instructions
 - **[Architecture](docs/ARCHITECTURE.md)**: System design and component interactions
 - **[User Guide](docs/USER-GUIDE.md)**: Dashboard usage and navigation
