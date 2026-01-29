@@ -1,0 +1,14 @@
+# Ignore environment files with credentials
+kibana.env
+.env
+*.env
+!*.env.example
+
+# Ignore backup files
+*.bak
+*.backup
+*~
+
+# Ignore temporary files
+.DS_Store
+Thumbs.db
