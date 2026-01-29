@@ -1,0 +1,92 @@
+{
+  "transform_id": "nifi-error-pattern-analysis",
+  "description": "10-minute aggregation of error patterns by category, source, and time-of-day",
+  "source": {
+    "index": [
+      "nifi-bulletins-*"
+    ],
+    "query": {
+      "term": {
+        "bulletinLevel": "ERROR"
+      }
+    }
+  },
+  "dest": {
+    "index": "nifi-ml-error-patterns",
+    "pipeline": "nifi-bulletins-pipeline"
+  },
+  "frequency": "10m",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "30s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "errorCategory": {
+        "terms": {
+          "field": "errorCategory"
+        }
+      },
+      "bulletinSourceName": {
+        "terms": {
+          "field": "bulletinSourceName"
+        }
+      },
+      "bulletinSourceType": {
+        "terms": {
+          "field": "bulletinSourceType"
+        }
+      },
+      "environment": {
+        "terms": {
+          "field": "environment"
+        }
+      },
+      "timestamp": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "fixed_interval": "10m"
+        }
+      },
+      "hour_of_day": {
+        "histogram": {
+          "field": "@timestamp",
+          "interval": 3600000
+        }
+      }
+    },
+    "aggregations": {
+      "error_count": {
+        "value_count": {
+          "field": "bulletinId"
+        }
+      },
+      "avg_severity_score": {
+        "avg": {
+          "field": "severityScore"
+        }
+      },
+      "unique_messages": {
+        "cardinality": {
+          "field": "bulletinMessage.keyword"
+        }
+      },
+      "sample_message": {
+        "top_metrics": {
+          "metrics": {
+            "field": "bulletinMessage.keyword"
+          },
+          "sort": {
+            "@timestamp": "desc"
+          }
+        }
+      }
+    }
+  },
+  "settings": {
+    "max_page_search_size": 500,
+    "docs_per_second": null
+  }
+}

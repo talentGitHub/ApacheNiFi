@@ -1,0 +1,101 @@
+{
+  "transform_id": "nifi-hourly-processor-summary",
+  "description": "Hourly aggregation of processor performance metrics for ML model training",
+  "source": {
+    "index": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "nifi-ml-features-hourly",
+    "pipeline": "nifi-flow-performance-pipeline"
+  },
+  "frequency": "1h",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "processorType": {
+        "terms": {
+          "field": "processorType"
+        }
+      },
+      "componentName": {
+        "terms": {
+          "field": "componentName"
+        }
+      },
+      "environment": {
+        "terms": {
+          "field": "environment"
+        }
+      },
+      "timestamp": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "fixed_interval": "1h"
+        }
+      }
+    },
+    "aggregations": {
+      "avg_processing_time": {
+        "avg": {
+          "field": "processingNanos"
+        }
+      },
+      "max_processing_time": {
+        "max": {
+          "field": "processingNanos"
+        }
+      },
+      "min_processing_time": {
+        "min": {
+          "field": "processingNanos"
+        }
+      },
+      "total_invocations": {
+        "sum": {
+          "field": "invocations"
+        }
+      },
+      "total_bytes_transferred": {
+        "sum": {
+          "field": "bytesTransferred"
+        }
+      },
+      "avg_throughput": {
+        "avg": {
+          "field": "throughputBytesPerSecond"
+        }
+      },
+      "avg_queue_utilization": {
+        "avg": {
+          "field": "queueUtilizationPercent"
+        }
+      },
+      "max_queue_utilization": {
+        "max": {
+          "field": "queueUtilizationPercent"
+        }
+      },
+      "error_count": {
+        "filter": {
+          "term": {
+            "runStatus": "Invalid"
+          }
+        }
+      }
+    }
+  },
+  "settings": {
+    "max_page_search_size": 500,
+    "docs_per_second": null
+  }
+}

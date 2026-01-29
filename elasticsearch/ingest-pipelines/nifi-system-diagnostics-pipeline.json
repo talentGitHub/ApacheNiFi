@@ -1,0 +1,46 @@
+{
+  "description": "Enrich system diagnostics with percentage normalization and nested structure parsing",
+  "processors": [
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.usedHeapBytes != null && ctx.maxHeapBytes != null && ctx.maxHeapBytes > 0) { ctx.heapUtilization = (float)(ctx.usedHeapBytes * 100.0 / ctx.maxHeapBytes); }"
+      }
+    },
+    {
+      "script": {
+        "lang": "painless",
+        "source": "if (ctx.storageUsage != null) { for (storage in ctx.storageUsage) { if (storage.totalSpaceBytes != null && storage.totalSpaceBytes > 0) { storage.usedSpaceBytes = storage.totalSpaceBytes - storage.freeSpaceBytes; storage.utilizationPercent = (float)(storage.usedSpaceBytes * 100.0 / storage.totalSpaceBytes); } } }"
+      }
+    },
+    {
+      "set": {
+        "field": "environment",
+        "value": "production",
+        "if": "ctx.environment == null"
+      }
+    },
+    {
+      "set": {
+        "field": "cluster",
+        "value": "default",
+        "if": "ctx.cluster == null"
+      }
+    },
+    {
+      "date": {
+        "field": "@timestamp",
+        "formats": ["ISO8601"],
+        "target_field": "@timestamp"
+      }
+    }
+  ],
+  "on_failure": [
+    {
+      "set": {
+        "field": "pipeline_error",
+        "value": "Failed to process system diagnostics"
+      }
+    }
+  ]
+}

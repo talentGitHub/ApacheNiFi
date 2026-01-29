@@ -1,0 +1,92 @@
+{
+  "index_patterns": ["nifi-system-diagnostics-*"],
+  "priority": 100,
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1,
+      "index.lifecycle.name": "nifi-system-diagnostics-ilm-policy",
+      "index.lifecycle.rollover_alias": "nifi-system-diagnostics",
+      "refresh_interval": "10s",
+      "codec": "best_compression"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "clusterNodeId": {
+          "type": "keyword"
+        },
+        "clusterNodeAddress": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "cluster": {
+          "type": "keyword"
+        },
+        "heapUtilization": {
+          "type": "float"
+        },
+        "usedHeapBytes": {
+          "type": "long"
+        },
+        "maxHeapBytes": {
+          "type": "long"
+        },
+        "usedNonHeapBytes": {
+          "type": "long"
+        },
+        "maxNonHeapBytes": {
+          "type": "long"
+        },
+        "processorLoadAverage": {
+          "type": "float"
+        },
+        "totalThreads": {
+          "type": "integer"
+        },
+        "daemonThreads": {
+          "type": "integer"
+        },
+        "gcStats": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "collectionCount": {
+              "type": "long"
+            },
+            "collectionMillis": {
+              "type": "long"
+            }
+          }
+        },
+        "storageUsage": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "freeSpaceBytes": {
+              "type": "long"
+            },
+            "totalSpaceBytes": {
+              "type": "long"
+            },
+            "usedSpaceBytes": {
+              "type": "long"
+            },
+            "utilizationPercent": {
+              "type": "float"
+            }
+          }
+        },
+        "uptime": {
+          "type": "long"
+        }
+      }
+    }
+  }
+}

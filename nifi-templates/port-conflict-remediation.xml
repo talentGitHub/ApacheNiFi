@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template encoding-version="1.3">
+    <description>Auto-remediation flow for handling port binding conflicts in Apache NiFi</description>
+    <groupId>auto-remediation</groupId>
+    <name>Port Conflict Self-Healing Flow</name>
+    <snippet>
+        <processGroups>
+            <id>port-conflict-handler</id>
+            <parentGroupId>root</parentGroupId>
+            <position>
+                <x>0.0</x>
+                <y>0.0</y>
+            </position>
+            <name>Port Conflict Handler</name>
+            <contents>
+                <!-- InvokeHTTP to listen for webhook alerts from Kibana -->
+                <processors>
+                    <id>webhook-listener</id>
+                    <name>Webhook Listener</name>
+                    <type>org.apache.nifi.processors.standard.ListenHTTP</type>
+                    <schedulingPeriod>0 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <properties>
+                        <entry>
+                            <key>Listening Port</key>
+                            <value>8081</value>
+                        </entry>
+                        <entry>
+                            <key>Base Path</key>
+                            <value>webhooks</value>
+                        </entry>
+                    </properties>
+                </processors>
+                
+                <!-- Extract JSON to get alert details -->
+                <processors>
+                    <id>extract-alert-data</id>
+                    <name>Extract Alert Data</name>
+                    <type>org.apache.nifi.processors.standard.EvaluateJsonPath</type>
+                    <properties>
+                        <entry>
+                            <key>alert_type</key>
+                            <value>$.alert_type</value>
+                        </entry>
+                        <entry>
+                            <key>port</key>
+                            <value>$.port</value>
+                        </entry>
+                        <entry>
+                            <key>component</key>
+                            <value>$.component</value>
+                        </entry>
+                    </properties>
+                </processors>
+                
+                <!-- Route based on alert type -->
+                <processors>
+                    <id>route-alert-type</id>
+                    <name>Route Alert Type</name>
+                    <type>org.apache.nifi.processors.standard.RouteOnAttribute</type>
+                    <properties>
+                        <entry>
+                            <key>port_conflict</key>
+                            <value>${alert_type:equals('port_conflict')}</value>
+                        </entry>
+                    </properties>
+                </processors>
+                
+                <!-- Execute remediation script -->
+                <processors>
+                    <id>execute-remediation</id>
+                    <name>Execute Remediation</name>
+                    <type>org.apache.nifi.processors.standard.ExecuteScript</type>
+                    <properties>
+                        <entry>
+                            <key>Script Engine</key>
+                            <value>python</value>
+                        </entry>
+                        <entry>
+                            <key>Script Body</key>
+                            <value><![CDATA[
+import subprocess
+import json
+
+# Read the flowfile
+flowFile = session.get()
+if flowFile is not None:
+    port = flowFile.getAttribute('port')
+    component = flowFile.getAttribute('component')
+    
+    # Find process using the port
+    try:
+        result = subprocess.run(['lsof', '-i', f':{port}'], 
+                              capture_output=True, text=True)
+        
+        # Log the remediation action
+        log.info(f"Port conflict detected on {port} for {component}")
+        log.info(f"Processes: {result.stdout}")
+        
+        # Update flowfile with results
+        flowFile = session.putAttribute(flowFile, 'remediation.result', 'investigated')
+        flowFile = session.putAttribute(flowFile, 'remediation.port_info', result.stdout)
+        
+        session.transfer(flowFile, REL_SUCCESS)
+    except Exception as e:
+        log.error(f"Remediation failed: {str(e)}")
+        flowFile = session.putAttribute(flowFile, 'remediation.error', str(e))
+        session.transfer(flowFile, REL_FAILURE)
+                            ]]></value>
+                        </entry>
+                    </properties>
+                </processors>
+                
+                <!-- Log remediation action to Elasticsearch -->
+                <processors>
+                    <id>log-to-elasticsearch</id>
+                    <name>Log to Elasticsearch</name>
+                    <type>org.apache.nifi.processors.elasticsearch.PutElasticsearchRecord</type>
+                    <properties>
+                        <entry>
+                            <key>Index</key>
+                            <value>nifi-remediation-audit</value>
+                        </entry>
+                        <entry>
+                            <key>Type</key>
+                            <value>_doc</value>
+                        </entry>
+                    </properties>
+                </processors>
+            </contents>
+        </processGroups>
+    </snippet>
+    <timestamp>2026-01-28T18:00:00Z</timestamp>
+</template>

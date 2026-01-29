@@ -1,0 +1,479 @@
+{
+  "version": "8.11.0",
+  "objects": [
+    {
+      "id": "nifi-system-diagnostics-health",
+      "type": "dashboard",
+      "attributes": {
+        "title": "NiFi System Diagnostics Health",
+        "description": "JVM, memory, storage, and GC monitoring for system health analysis",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"filter\":[]}"
+        },
+        "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"hidePanelTitles\":false}",
+        "panelsJSON": "[{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":0,\"w\":12,\"h\":10,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{\"title\":\"Heap Usage Gauge\"},\"panelRefName\":\"panel_1\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":12,\"y\":0,\"w\":12,\"h\":10,\"i\":\"2\"},\"panelIndex\":\"2\",\"embeddableConfig\":{\"title\":\"Non-Heap Usage Gauge\"},\"panelRefName\":\"panel_2\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":24,\"y\":0,\"w\":24,\"h\":10,\"i\":\"3\"},\"panelIndex\":\"3\",\"embeddableConfig\":{\"title\":\"GC Performance\"},\"panelRefName\":\"panel_3\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":10,\"w\":24,\"h\":12,\"i\":\"4\"},\"panelIndex\":\"4\",\"embeddableConfig\":{\"title\":\"Storage Utilization by Repository\"},\"panelRefName\":\"panel_4\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":24,\"y\":10,\"w\":12,\"h\":12,\"i\":\"5\"},\"panelIndex\":\"5\",\"embeddableConfig\":{\"title\":\"CPU Load Average\"},\"panelRefName\":\"panel_5\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":36,\"y\":10,\"w\":12,\"h\":12,\"i\":\"6\"},\"panelIndex\":\"6\",\"embeddableConfig\":{\"title\":\"Thread Metrics\"},\"panelRefName\":\"panel_6\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":22,\"w\":48,\"h\":12,\"i\":\"7\"},\"panelIndex\":\"7\",\"embeddableConfig\":{\"title\":\"Historical Comparison Table\"},\"panelRefName\":\"panel_7\"}]",
+        "timeRestore": false,
+        "version": 1
+      }
+    },
+    {
+      "id": "heap-usage-gauge",
+      "type": "lens",
+      "attributes": {
+        "title": "Heap Usage Gauge",
+        "visualizationType": "lnsGauge",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Heap Utilization %",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "heapUtilization"
+                    }
+                  },
+                  "columnOrder": ["col1"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "metricAccessor": "col1",
+            "max": 100,
+            "goal": 85
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "non-heap-usage-gauge",
+      "type": "lens",
+      "attributes": {
+        "title": "Non-Heap Usage Gauge",
+        "visualizationType": "lnsGauge",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Non-Heap Utilization %",
+                      "dataType": "number",
+                      "operationType": "formula",
+                      "params": {
+                        "formula": "average(usedNonHeapBytes) / average(maxNonHeapBytes) * 100"
+                      }
+                    }
+                  },
+                  "columnOrder": ["col1"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "metricAccessor": "col1",
+            "max": 100,
+            "goal": 85
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "gc-performance",
+      "type": "lens",
+      "attributes": {
+        "title": "GC Performance",
+        "visualizationType": "lnsXY",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "GC Count Rate",
+                      "dataType": "number",
+                      "operationType": "differences",
+                      "sourceField": "gcStats.collectionCount"
+                    },
+                    "col3": {
+                      "label": "GC Duration (ms)",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "gcStats.collectionMillis"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "legend": {
+              "isVisible": true,
+              "position": "right"
+            },
+            "valueLabels": "hide",
+            "fittingFunction": "None",
+            "layers": [
+              {
+                "layerId": "layer1",
+                "accessors": ["col2", "col3"],
+                "position": "top",
+                "seriesType": "line",
+                "xAccessor": "col1"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "storage-utilization",
+      "type": "lens",
+      "attributes": {
+        "title": "Storage Utilization by Repository",
+        "visualizationType": "lnsXY",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "Storage Name",
+                      "dataType": "string",
+                      "operationType": "terms",
+                      "sourceField": "storageUsage.name",
+                      "params": {
+                        "size": 10
+                      }
+                    },
+                    "col3": {
+                      "label": "Utilization %",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "storageUsage.utilizationPercent"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "legend": {
+              "isVisible": true,
+              "position": "right"
+            },
+            "valueLabels": "hide",
+            "fittingFunction": "None",
+            "layers": [
+              {
+                "layerId": "layer1",
+                "accessors": ["col3"],
+                "position": "top",
+                "seriesType": "line",
+                "splitAccessor": "col2",
+                "xAccessor": "col1"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cpu-load-average",
+      "type": "lens",
+      "attributes": {
+        "title": "CPU Load Average",
+        "visualizationType": "lnsXY",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "CPU Load",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "processorLoadAverage"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "legend": {
+              "isVisible": true,
+              "position": "right"
+            },
+            "valueLabels": "hide",
+            "fittingFunction": "None",
+            "layers": [
+              {
+                "layerId": "layer1",
+                "accessors": ["col2"],
+                "position": "top",
+                "seriesType": "area",
+                "xAccessor": "col1"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "thread-metrics",
+      "type": "lens",
+      "attributes": {
+        "title": "Thread Metrics",
+        "visualizationType": "lnsXY",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "Total Threads",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "totalThreads"
+                    },
+                    "col3": {
+                      "label": "Daemon Threads",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "daemonThreads"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "legend": {
+              "isVisible": true,
+              "position": "right"
+            },
+            "valueLabels": "hide",
+            "fittingFunction": "None",
+            "layers": [
+              {
+                "layerId": "layer1",
+                "accessors": ["col2", "col3"],
+                "position": "top",
+                "seriesType": "line",
+                "xAccessor": "col1"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "historical-comparison-table",
+      "type": "lens",
+      "attributes": {
+        "title": "Historical Comparison Table",
+        "visualizationType": "lnsDatatable",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "1h"
+                      }
+                    },
+                    "col2": {
+                      "label": "Avg Heap %",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "heapUtilization"
+                    },
+                    "col3": {
+                      "label": "Avg CPU Load",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "processorLoadAverage"
+                    },
+                    "col4": {
+                      "label": "Total Threads",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "totalThreads"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3", "col4"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "columns": [
+              {
+                "columnId": "col1"
+              },
+              {
+                "columnId": "col2"
+              },
+              {
+                "columnId": "col3"
+              },
+              {
+                "columnId": "col4"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    }
+  ]
+}

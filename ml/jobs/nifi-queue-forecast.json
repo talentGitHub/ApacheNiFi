@@ -1,0 +1,60 @@
+{
+  "job_id": "nifi-queue-forecast",
+  "description": "Forecasts queue size 24 hours ahead for predictive capacity planning",
+  "analysis_config": {
+    "bucket_span": "1h",
+    "detectors": [
+      {
+        "detector_description": "Mean queue count forecast",
+        "function": "mean",
+        "field_name": "queuedCount",
+        "partition_field_name": "componentName"
+      },
+      {
+        "detector_description": "High queue count",
+        "function": "high_mean",
+        "field_name": "queuedCount",
+        "partition_field_name": "componentName"
+      }
+    ],
+    "influencers": [
+      "componentName",
+      "processGroupName",
+      "environment"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "1gb"
+  },
+  "model_plot_config": {
+    "enabled": true,
+    "annotations_enabled": true
+  },
+  "model_snapshot_retention_days": 10,
+  "daily_model_snapshot_retention_after_days": 1,
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-queue-forecast",
+    "job_id": "nifi-queue-forecast",
+    "indices": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "exists": {
+              "field": "queuedCount"
+            }
+          }
+        ]
+      }
+    },
+    "scroll_size": 1000,
+    "frequency": "15m",
+    "query_delay": "60s"
+  }
+}

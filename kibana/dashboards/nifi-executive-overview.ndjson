@@ -1,0 +1,421 @@
+{
+  "version": "8.11.0",
+  "objects": [
+    {
+      "id": "nifi-executive-overview",
+      "type": "dashboard",
+      "attributes": {
+        "title": "NiFi Executive Overview",
+        "description": "Single-pane-of-glass for stakeholders with real-time system status, active errors, and performance metrics",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+          "searchSourceJSON": "{\"query\":{\"language\":\"kuery\",\"query\":\"\"},\"filter\":[]}"
+        },
+        "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"hidePanelTitles\":false}",
+        "panelsJSON": "[{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":0,\"w\":12,\"h\":8,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{\"title\":\"System Status KPI\"},\"panelRefName\":\"panel_1\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":12,\"y\":0,\"w\":12,\"h\":8,\"i\":\"2\"},\"panelIndex\":\"2\",\"embeddableConfig\":{\"title\":\"Active Errors (Last 5 min)\"},\"panelRefName\":\"panel_2\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":24,\"y\":0,\"w\":12,\"h\":8,\"i\":\"3\"},\"panelIndex\":\"3\",\"embeddableConfig\":{\"title\":\"JVM Memory Utilization\"},\"panelRefName\":\"panel_3\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":36,\"y\":0,\"w\":12,\"h\":8,\"i\":\"4\"},\"panelIndex\":\"4\",\"embeddableConfig\":{\"title\":\"Queue Backpressure Gauge\"},\"panelRefName\":\"panel_4\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":0,\"y\":8,\"w\":24,\"h\":12,\"i\":\"5\"},\"panelIndex\":\"5\",\"embeddableConfig\":{\"title\":\"Error Rate Timeline\"},\"panelRefName\":\"panel_5\"},{\"version\":\"8.11.0\",\"gridData\":{\"x\":24,\"y\":8,\"w\":24,\"h\":12,\"i\":\"6\"},\"panelIndex\":\"6\",\"embeddableConfig\":{\"title\":\"Processor Health Heatmap\"},\"panelRefName\":\"panel_6\"}]",
+        "timeRestore": false,
+        "version": 1,
+        "refreshInterval": {
+          "pause": false,
+          "value": 30000
+        }
+      }
+    },
+    {
+      "id": "system-status-kpi",
+      "type": "lens",
+      "attributes": {
+        "title": "System Status KPI",
+        "visualizationType": "lnsMetric",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "ERROR Count",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___",
+                      "filter": {
+                        "query": "bulletinLevel: ERROR",
+                        "language": "kuery"
+                      }
+                    }
+                  },
+                  "columnOrder": ["col1"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "accessor": "col1",
+            "layerType": "data",
+            "colorMode": "Labels"
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "active-errors-5min",
+      "type": "lens",
+      "attributes": {
+        "title": "Active Errors (Last 5 min)",
+        "visualizationType": "lnsDatatable",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "Source",
+                      "dataType": "string",
+                      "operationType": "terms",
+                      "sourceField": "bulletinSourceName",
+                      "params": {
+                        "size": 10,
+                        "orderBy": {
+                          "type": "column",
+                          "columnId": "col3"
+                        },
+                        "orderDirection": "desc"
+                      }
+                    },
+                    "col3": {
+                      "label": "Count",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___"
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "columns": [
+              {
+                "columnId": "col1"
+              },
+              {
+                "columnId": "col2"
+              },
+              {
+                "columnId": "col3"
+              }
+            ]
+          },
+          "query": {
+            "query": "bulletinLevel: ERROR",
+            "language": "kuery"
+          },
+          "filters": [
+            {
+              "meta": {
+                "index": "nifi-bulletins-*",
+                "type": "time"
+              },
+              "query": {
+                "range": {
+                  "@timestamp": {
+                    "gte": "now-5m",
+                    "lte": "now"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "jvm-memory-utilization",
+      "type": "lens",
+      "attributes": {
+        "title": "JVM Memory Utilization",
+        "visualizationType": "lnsGauge",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Heap Utilization %",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "heapUtilization"
+                    }
+                  },
+                  "columnOrder": ["col1"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "metricAccessor": "col1",
+            "max": 100,
+            "goal": 85
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-system-diagnostics-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "queue-backpressure-gauge",
+      "type": "lens",
+      "attributes": {
+        "title": "Queue Backpressure Gauge",
+        "visualizationType": "lnsGauge",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Queue Utilization %",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "queueUtilizationPercent"
+                    }
+                  },
+                  "columnOrder": ["col1"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "metricAccessor": "col1",
+            "max": 100,
+            "goal": 80
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-flow-performance-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "error-rate-timeline",
+      "type": "lens",
+      "attributes": {
+        "title": "Error Rate Timeline",
+        "visualizationType": "lnsXY",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col2": {
+                      "label": "ERROR",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___",
+                      "filter": {
+                        "query": "bulletinLevel: ERROR",
+                        "language": "kuery"
+                      }
+                    },
+                    "col3": {
+                      "label": "WARN",
+                      "dataType": "number",
+                      "operationType": "count",
+                      "sourceField": "___records___",
+                      "filter": {
+                        "query": "bulletinLevel: WARN OR bulletinLevel: WARNING",
+                        "language": "kuery"
+                      }
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "legend": {
+              "isVisible": true,
+              "position": "right"
+            },
+            "valueLabels": "hide",
+            "fittingFunction": "None",
+            "axisTitlesVisibilitySettings": {
+              "x": true,
+              "yLeft": true,
+              "yRight": true
+            },
+            "layers": [
+              {
+                "layerId": "layer1",
+                "accessors": ["col2", "col3"],
+                "position": "top",
+                "seriesType": "area",
+                "showGridlines": false,
+                "xAccessor": "col1"
+              }
+            ]
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-bulletins-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    },
+    {
+      "id": "processor-health-heatmap",
+      "type": "lens",
+      "attributes": {
+        "title": "Processor Health Heatmap",
+        "visualizationType": "lnsHeatmap",
+        "state": {
+          "datasourceStates": {
+            "formBased": {
+              "layers": {
+                "layer1": {
+                  "columns": {
+                    "col1": {
+                      "label": "Processor Type",
+                      "dataType": "string",
+                      "operationType": "terms",
+                      "sourceField": "processorType",
+                      "params": {
+                        "size": 20,
+                        "orderBy": {
+                          "type": "alphabetical"
+                        },
+                        "orderDirection": "asc"
+                      }
+                    },
+                    "col2": {
+                      "label": "@timestamp",
+                      "dataType": "date",
+                      "operationType": "date_histogram",
+                      "sourceField": "@timestamp",
+                      "params": {
+                        "interval": "auto"
+                      }
+                    },
+                    "col3": {
+                      "label": "Avg Processing Time (ms)",
+                      "dataType": "number",
+                      "operationType": "average",
+                      "sourceField": "processingNanos",
+                      "params": {
+                        "format": {
+                          "id": "number",
+                          "params": {
+                            "decimals": 2
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "columnOrder": ["col1", "col2", "col3"],
+                  "incompleteColumns": {}
+                }
+              }
+            }
+          },
+          "visualization": {
+            "layerId": "layer1",
+            "xAccessor": "col2",
+            "yAccessor": "col1",
+            "valueAccessor": "col3"
+          },
+          "query": {
+            "query": "",
+            "language": "kuery"
+          },
+          "filters": []
+        },
+        "references": [
+          {
+            "type": "index-pattern",
+            "id": "nifi-flow-performance-*",
+            "name": "indexpattern-datasource-layer-layer1"
+          }
+        ]
+      }
+    }
+  ]
+}
