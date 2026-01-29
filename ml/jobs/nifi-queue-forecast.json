@@ -1,0 +1,71 @@
+{
+  "job_id": "nifi-queue-forecast",
+  "description": "Forecasts queue size 24 hours ahead for predictive capacity planning",
+  "analysis_config": {
+    "bucket_span": "1h",
+    "detectors": [
+      {
+        "detector_description": "Queue growth forecast",
+        "function": "mean",
+        "field_name": "queuedCount",
+        "partition_field_name": "componentName"
+      },
+      {
+        "detector_description": "Queue size anomaly",
+        "function": "high_mean",
+        "field_name": "queuedSize",
+        "partition_field_name": "componentName"
+      },
+      {
+        "detector_description": "Queue utilization trend",
+        "function": "mean",
+        "field_name": "queueUtilization",
+        "by_field_name": "environment"
+      }
+    ],
+    "influencers": [
+      "componentName",
+      "environment",
+      "processGroup"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "model_plot_config": {
+    "enabled": true,
+    "annotations_enabled": true
+  },
+  "results_index_name": "ml-nifi-queue-forecast",
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-queue-forecast",
+    "indices": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "@timestamp": {
+                "gte": "now-90d"
+              }
+            }
+          },
+          {
+            "exists": {
+              "field": "queuedCount"
+            }
+          }
+        ]
+      }
+    },
+    "scroll_size": 1000,
+    "frequency": "30m",
+    "query_delay": "120s"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "512mb"
+  }
+}

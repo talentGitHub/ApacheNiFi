@@ -1,0 +1,42 @@
+{
+  "id": "nifi-historical-trends",
+  "type": "dashboard",
+  "attributes": {
+    "title": "[NiFi] Historical Trends & Capacity Planning",
+    "description": "Long-term analysis and forecasting - Growth projections, ML forecasts, SLA compliance",
+    "panelsJSON": "[{\"version\":\"8.0.0\",\"type\":\"visualization\",\"gridData\":{\"x\":0,\"y\":0,\"w\":32,\"h\":10,\"i\":\"1\"},\"panelIndex\":\"1\",\"embeddableConfig\":{\"title\":\"Data Processing Volume Growth (with 30-day ML Forecast)\"},\"panelRefName\":\"panel_1\"},{\"version\":\"8.0.0\",\"type\":\"visualization\",\"gridData\":{\"x\":32,\"y\":0,\"w\":16,\"h\":10,\"i\":\"2\"},\"panelIndex\":\"2\",\"embeddableConfig\":{\"title\":\"Storage Growth Projection\"},\"panelRefName\":\"panel_2\"},{\"version\":\"8.0.0\",\"type\":\"search\",\"gridData\":{\"x\":0,\"y\":10,\"w\":24,\"h\":8,\"i\":\"3\"},\"panelIndex\":\"3\",\"embeddableConfig\":{\"title\":\"Capacity Projections Table\"},\"panelRefName\":\"panel_3\"},{\"version\":\"8.0.0\",\"type\":\"visualization\",\"gridData\":{\"x\":24,\"y\":10,\"w\":24,\"h\":8,\"i\":\"4\"},\"panelIndex\":\"4\",\"embeddableConfig\":{\"title\":\"Processor Duration Distribution\"},\"panelRefName\":\"panel_4\"},{\"version\":\"8.0.0\",\"type\":\"visualization\",\"gridData\":{\"x\":0,\"y\":18,\"w\":48,\"h\":6,\"i\":\"5\"},\"panelIndex\":\"5\",\"embeddableConfig\":{\"title\":\"SLA Compliance Goal\"},\"panelRefName\":\"panel_5\"}]",
+    "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"hidePanelTitles\":false}",
+    "version": 1,
+    "timeRestore": false,
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": "{\"query\":{\"query\":\"\",\"language\":\"kuery\"},\"filter\":[]}"
+    }
+  },
+  "references": [
+    {
+      "name": "panel_1",
+      "type": "visualization",
+      "id": "nifi-volume-forecast"
+    },
+    {
+      "name": "panel_2",
+      "type": "visualization",
+      "id": "nifi-storage-projection"
+    },
+    {
+      "name": "panel_3",
+      "type": "search",
+      "id": "nifi-capacity-projections"
+    },
+    {
+      "name": "panel_4",
+      "type": "visualization",
+      "id": "nifi-duration-distribution"
+    },
+    {
+      "name": "panel_5",
+      "type": "visualization",
+      "id": "nifi-sla-compliance"
+    }
+  ]
+}

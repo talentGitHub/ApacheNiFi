@@ -1,0 +1,107 @@
+{
+  "transform_id": "nifi-hourly-processor-performance",
+  "description": "Aggregates processor performance metrics hourly for ML training and analysis",
+  "source": {
+    "index": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "exists": {
+              "field": "processingMillis"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "nifi-ml-features-hourly",
+    "pipeline": "nifi-flow-performance-pipeline"
+  },
+  "frequency": "1h",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "120s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "componentName": {
+        "terms": {
+          "field": "componentName"
+        }
+      },
+      "processorType": {
+        "terms": {
+          "field": "processorType"
+        }
+      },
+      "environment": {
+        "terms": {
+          "field": "environment"
+        }
+      },
+      "hour": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "fixed_interval": "1h"
+        }
+      }
+    },
+    "aggregations": {
+      "avg_processing_millis": {
+        "avg": {
+          "field": "processingMillis"
+        }
+      },
+      "max_processing_millis": {
+        "max": {
+          "field": "processingMillis"
+        }
+      },
+      "total_invocations": {
+        "sum": {
+          "field": "invocations"
+        }
+      },
+      "total_bytes_transferred": {
+        "sum": {
+          "field": "bytesTransferred"
+        }
+      },
+      "avg_queue_utilization": {
+        "avg": {
+          "field": "queueUtilization"
+        }
+      },
+      "max_queue_count": {
+        "max": {
+          "field": "queuedCount"
+        }
+      },
+      "error_count": {
+        "value_count": {
+          "field": "componentName"
+        }
+      },
+      "avg_throughput": {
+        "avg": {
+          "field": "throughputBytesPerSecond"
+        }
+      },
+      "processing_efficiency": {
+        "avg": {
+          "field": "processingEfficiency"
+        }
+      }
+    }
+  },
+  "settings": {
+    "max_page_search_size": 500,
+    "docs_per_second": null
+  }
+}
