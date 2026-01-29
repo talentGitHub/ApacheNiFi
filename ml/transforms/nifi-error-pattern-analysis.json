@@ -1,0 +1,102 @@
+{
+  "transform_id": "nifi-error-pattern-analysis",
+  "description": "Aggregates error patterns by category, source, and time for predictive alerting",
+  "source": {
+    "index": [
+      "nifi-bulletins-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "terms": {
+              "bulletinLevel": ["ERROR", "WARN"]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "nifi-ml-error-patterns",
+    "pipeline": "nifi-bulletins-pipeline"
+  },
+  "frequency": "10m",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "pivot": {
+    "group_by": {
+      "errorCategory": {
+        "terms": {
+          "field": "errorCategory"
+        }
+      },
+      "bulletinSourceName": {
+        "terms": {
+          "field": "bulletinSourceName"
+        }
+      },
+      "bulletinLevel": {
+        "terms": {
+          "field": "bulletinLevel"
+        }
+      },
+      "environment": {
+        "terms": {
+          "field": "environment"
+        }
+      },
+      "hour_of_day": {
+        "date_histogram": {
+          "field": "@timestamp",
+          "fixed_interval": "1h"
+        }
+      }
+    },
+    "aggregations": {
+      "error_count": {
+        "value_count": {
+          "field": "bulletinId"
+        }
+      },
+      "unique_sources": {
+        "cardinality": {
+          "field": "bulletinSourceId"
+        }
+      },
+      "avg_severity_score": {
+        "avg": {
+          "field": "severityScore"
+        }
+      },
+      "max_severity_score": {
+        "max": {
+          "field": "severityScore"
+        }
+      },
+      "first_occurrence": {
+        "min": {
+          "field": "@timestamp"
+        }
+      },
+      "last_occurrence": {
+        "max": {
+          "field": "@timestamp"
+        }
+      },
+      "affected_groups": {
+        "cardinality": {
+          "field": "bulletinGroupId"
+        }
+      }
+    }
+  },
+  "settings": {
+    "max_page_search_size": 500,
+    "docs_per_second": null
+  }
+}

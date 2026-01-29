@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<template encoding-version="1.3">
+    <description>Auto-remediation for memory issues - monitors heap usage and takes action when thresholds are exceeded</description>
+    <groupId>memory-handler-group</groupId>
+    <name>Memory Error Handler Flow</name>
+    <snippet>
+        <processGroups>
+            <id>memory-handler</id>
+            <parentGroupId>root</parentGroupId>
+            <position>
+                <x>0.0</x>
+                <y>100.0</y>
+            </position>
+            <name>Memory Error Handler</name>
+            <processors>
+                <id>monitor-heap</id>
+                <name>Monitor Heap Utilization</name>
+                <type>org.apache.nifi.processors.standard.GetHTTP</type>
+                <config>
+                    <schedulingPeriod>1 min</schedulingPeriod>
+                    <properties>
+                        <entry>
+                            <key>URL</key>
+                            <value>http://localhost:9200/nifi-system-diagnostics-*/_search</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>check-threshold</id>
+                <name>Check Memory Threshold</name>
+                <type>org.apache.nifi.processors.standard.RouteOnAttribute</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>critical</key>
+                            <value>${heapUtilization:gt(90)}</value>
+                        </entry>
+                        <entry>
+                            <key>warning</key>
+                            <value>${heapUtilization:gt(85):and(${heapUtilization:le(90)})}</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>trigger-gc</id>
+                <name>Trigger Emergency GC</name>
+                <type>org.apache.nifi.processors.standard.ExecuteGroovyScript</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>Script Body</key>
+                            <value>
+                                System.gc()
+                                log.warn('Emergency GC triggered due to high heap utilization')
+                            </value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>stop-non-critical</id>
+                <name>Stop Non-Critical Processors</name>
+                <type>org.apache.nifi.processors.standard.InvokeHTTP</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>HTTP Method</key>
+                            <value>PUT</value>
+                        </entry>
+                        <entry>
+                            <key>Remote URL</key>
+                            <value>http://localhost:8080/nifi-api/processors/${processorId}/run-status</value>
+                        </entry>
+                        <entry>
+                            <key>Request Body</key>
+                            <value>{"state": "STOPPED"}</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>notify-ops</id>
+                <name>Notify Operations Team</name>
+                <type>org.apache.nifi.processors.standard.PutEmail</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>SMTP Hostname</key>
+                            <value>smtp.company.com</value>
+                        </entry>
+                        <entry>
+                            <key>To</key>
+                            <value>ops-team@company.com</value>
+                        </entry>
+                        <entry>
+                            <key>Subject</key>
+                            <value>CRITICAL: NiFi Memory Alert - Auto-remediation Triggered</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>log-action</id>
+                <name>Log Remediation to Audit</name>
+                <type>org.apache.nifi.processors.standard.PutElasticsearchHttp</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>Index</key>
+                            <value>nifi-remediation-audit</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+        </processGroups>
+    </snippet>
+</template>

@@ -1,0 +1,69 @@
+{
+  "job_id": "nifi-processing-anomaly",
+  "description": "Detects unusual processor execution times and abnormal invocation counts",
+  "analysis_config": {
+    "bucket_span": "15m",
+    "detectors": [
+      {
+        "detector_description": "High processing time",
+        "function": "high_mean",
+        "field_name": "processingMillis",
+        "partition_field_name": "componentName"
+      },
+      {
+        "detector_description": "Unusual invocation count",
+        "function": "mean",
+        "field_name": "invocations",
+        "partition_field_name": "componentName"
+      },
+      {
+        "detector_description": "Processing time spikes",
+        "function": "high_sum",
+        "field_name": "processingNanos",
+        "by_field_name": "processorType"
+      }
+    ],
+    "influencers": [
+      "componentName",
+      "processorType",
+      "environment",
+      "runStatus"
+    ]
+  },
+  "data_description": {
+    "time_field": "@timestamp",
+    "time_format": "epoch_ms"
+  },
+  "model_plot_config": {
+    "enabled": true,
+    "annotations_enabled": true
+  },
+  "results_index_name": "ml-nifi-processing-anomaly",
+  "datafeed_config": {
+    "datafeed_id": "datafeed-nifi-processing-anomaly",
+    "indices": [
+      "nifi-flow-performance-*"
+    ],
+    "query": {
+      "bool": {
+        "must": [
+          {
+            "range": {
+              "@timestamp": {
+                "gte": "now-30d"
+              }
+            }
+          },
+          {
+            "exists": {
+              "field": "processingMillis"
+            }
+          }
+        ]
+      }
+    },
+    "scroll_size": 1000,
+    "frequency": "5m",
+    "query_delay": "60s"
+  }
+}

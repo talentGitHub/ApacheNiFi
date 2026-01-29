@@ -1,0 +1,57 @@
+# Elasticsearch Cloud Configuration
+# Copy this file to elasticsearch-cloud.yaml and fill in your credentials
+
+elasticsearch:
+  # Elasticsearch Cloud endpoint (e.g., https://your-deployment.es.io:9243)
+  host: "https://your-elasticsearch-cloud.es.io:9243"
+  
+  # API Key authentication (recommended)
+  api_key: "YOUR_API_KEY_HERE"
+  
+  # Or use username/password authentication
+  # username: "elastic"
+  # password: "YOUR_PASSWORD_HERE"
+  
+  # Connection settings
+  verify_certs: true
+  timeout: 30
+  max_retries: 3
+
+kibana:
+  # Kibana Cloud endpoint (e.g., https://your-deployment.kb.io:9243)
+  host: "https://your-kibana-cloud.kb.io:9243"
+  
+  # Use same authentication as Elasticsearch
+  api_key: "YOUR_API_KEY_HERE"
+  # Or username/password
+  # username: "elastic"
+  # password: "YOUR_PASSWORD_HERE"
+
+nifi:
+  # Apache NiFi instance URL
+  host: "http://localhost:8080/nifi-api"
+  
+  # NiFi authentication (if secured)
+  # username: "admin"
+  # password: "admin_password"
+  
+  # Or use token-based authentication
+  # token: "YOUR_NIFI_TOKEN"
+
+# Index naming patterns
+indices:
+  bulletins: "nifi-bulletins"
+  system_diagnostics: "nifi-system-diagnostics"
+  flow_performance: "nifi-flow-performance"
+  ml_features: "nifi-ml-features-hourly"
+  error_patterns: "nifi-ml-error-patterns"
+  remediation_audit: "nifi-remediation-audit"
+
+# Data retention settings (in days)
+retention:
+  bulletins: 30
+  system_diagnostics: 90
+  flow_performance: 90
+  ml_features: 180
+  error_patterns: 90
+  remediation_audit: 365
