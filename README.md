@@ -96,7 +96,12 @@ cp config/elasticsearch-cloud.yaml.example config/elasticsearch-cloud.yaml
 ./scripts/setup-elasticsearch.sh
 
 # 4. Import Kibana dashboards
-./scripts/setup-kibana.sh
+# Option A: Using the provided script
+cd kibana
+./import-dashboard.sh https://your-kibana-instance.kb.cloud
+
+# Option B: Manual import via Kibana UI
+# See kibana/README.md for detailed instructions
 
 # 5. Deploy ML jobs and transforms
 ./scripts/deploy-ml-jobs.sh
