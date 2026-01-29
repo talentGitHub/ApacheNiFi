@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<template encoding-version="1.3">
+    <description>Auto-remediation for queue backpressure - monitors queue utilization and scales resources</description>
+    <groupId>backpressure-releaser</groupId>
+    <name>Backpressure Releaser Flow</name>
+    <snippet>
+        <processGroups>
+            <id>backpressure-group</id>
+            <parentGroupId>root</parentGroupId>
+            <position>
+                <x>0.0</x>
+                <y>200.0</y>
+            </position>
+            <name>Backpressure Releaser</name>
+            <processors>
+                <id>monitor-queues</id>
+                <name>Monitor Queue Utilization</name>
+                <type>org.apache.nifi.processors.standard.GetHTTP</type>
+                <config>
+                    <schedulingPeriod>30 sec</schedulingPeriod>
+                    <properties>
+                        <entry>
+                            <key>URL</key>
+                            <value>http://localhost:9200/nifi-flow-performance-*/_search</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>filter-high-utilization</id>
+                <name>Filter High Queue Utilization</name>
+                <type>org.apache.nifi.processors.standard.QueryRecord</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>query</key>
+                            <value>SELECT * FROM FLOWFILE WHERE queueUtilization > 95</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>increase-concurrency</id>
+                <name>Increase Concurrent Tasks</name>
+                <type>org.apache.nifi.processors.standard.InvokeHTTP</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>HTTP Method</key>
+                            <value>PUT</value>
+                        </entry>
+                        <entry>
+                            <key>Remote URL</key>
+                            <value>http://localhost:8080/nifi-api/processors/${componentId}</value>
+                        </entry>
+                        <entry>
+                            <key>Request Body</key>
+                            <value>{"component": {"config": {"concurrentlySchedulableTaskCount": "${concurrentTasks:plus(2)}"}}}</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>drop-expired</id>
+                <name>Drop Expired FlowFiles</name>
+                <type>org.apache.nifi.processors.standard.UpdateAttribute</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>max.age</key>
+                            <value>1 hour</value>
+                        </entry>
+                    </properties>
+                    <autoTerminatedRelationships>
+                        <name>expired</name>
+                    </autoTerminatedRelationships>
+                </config>
+            </processors>
+            <processors>
+                <id>enable-alt-route</id>
+                <name>Enable Alternative Routing</name>
+                <type>org.apache.nifi.processors.standard.RouteOnAttribute</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>alternative_path</key>
+                            <value>${queueUtilization:gt(90)}</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>scale-threads</id>
+                <name>Scale Processor Threads</name>
+                <type>org.apache.nifi.processors.standard.ExecuteGroovyScript</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>Script Body</key>
+                            <value>
+                                // Dynamically scale based on queue pressure
+                                def currentThreads = flowFile.getAttribute('activeThreadCount') as Integer
+                                def newThreads = Math.min(currentThreads + 2, 10)
+                                flowFile = session.putAttribute(flowFile, 'recommendedThreads', newThreads.toString())
+                                session.transfer(flowFile, REL_SUCCESS)
+                            </value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>log-backpressure-action</id>
+                <name>Log to Audit Trail</name>
+                <type>org.apache.nifi.processors.standard.PutElasticsearchHttp</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>Index</key>
+                            <value>nifi-remediation-audit</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+        </processGroups>
+    </snippet>
+</template>

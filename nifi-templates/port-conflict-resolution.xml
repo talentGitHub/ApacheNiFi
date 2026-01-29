@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<template encoding-version="1.3">
+    <description>Auto-remediation flow for port conflict errors - detects "Address already in use" and attempts resolution</description>
+    <groupId>port-conflict-remediation</groupId>
+    <name>Port Conflict Resolution Flow</name>
+    <snippet>
+        <processGroups>
+            <id>port-conflict-group</id>
+            <parentGroupId>root</parentGroupId>
+            <position>
+                <x>0.0</x>
+                <y>0.0</y>
+            </position>
+            <name>Port Conflict Resolution</name>
+            <processors>
+                <id>monitor-bulletins</id>
+                <name>Monitor Port Conflict Bulletins</name>
+                <type>org.apache.nifi.processors.standard.GetHTTP</type>
+                <config>
+                    <schedulingPeriod>10 sec</schedulingPeriod>
+                    <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+                    <properties>
+                        <entry>
+                            <key>URL</key>
+                            <value>http://localhost:9200/nifi-bulletins-*/_search</value>
+                        </entry>
+                        <entry>
+                            <key>Filename</key>
+                            <value>bulletins-${now():format('yyyyMMdd-HHmmss')}.json</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>filter-port-errors</id>
+                <name>Filter Port Conflict Errors</name>
+                <type>org.apache.nifi.processors.standard.QueryRecord</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>query</key>
+                            <value>SELECT * FROM FLOWFILE WHERE errorCategory = 'PORT_CONFLICT' AND bulletinLevel = 'ERROR'</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>extract-port</id>
+                <name>Extract Port Number</name>
+                <type>org.apache.nifi.processors.standard.EvaluateJsonPath</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>extractedPort</key>
+                            <value>$.hits.hits[0]._source.extractedPort</value>
+                        </entry>
+                        <entry>
+                            <key>bulletinMessage</key>
+                            <value>$.hits.hits[0]._source.bulletinMessage</value>
+                        </entry>
+                        <entry>
+                            <key>bulletinSourceName</key>
+                            <value>$.hits.hits[0]._source.bulletinSourceName</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>check-port-usage</id>
+                <name>Check Port Usage</name>
+                <type>org.apache.nifi.processors.standard.ExecuteStreamCommand</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>Command</key>
+                            <value>lsof -i :${extractedPort}</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>call-llm-analysis</id>
+                <name>Call LLM Analysis Service</name>
+                <type>org.apache.nifi.processors.standard.InvokeHTTP</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>HTTP Method</key>
+                            <value>POST</value>
+                        </entry>
+                        <entry>
+                            <key>Remote URL</key>
+                            <value>http://llm-service:5000/analyze</value>
+                        </entry>
+                        <entry>
+                            <key>Content-Type</key>
+                            <value>application/json</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+            <processors>
+                <id>log-remediation</id>
+                <name>Log Remediation Action</name>
+                <type>org.apache.nifi.processors.standard.PutElasticsearchHttp</type>
+                <config>
+                    <properties>
+                        <entry>
+                            <key>Elasticsearch URL</key>
+                            <value>http://localhost:9200</value>
+                        </entry>
+                        <entry>
+                            <key>Index</key>
+                            <value>nifi-remediation-audit</value>
+                        </entry>
+                    </properties>
+                </config>
+            </processors>
+        </processGroups>
+    </snippet>
+</template>
