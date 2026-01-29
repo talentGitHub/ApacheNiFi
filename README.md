@@ -82,7 +82,9 @@ This platform provides comprehensive observability for Apache NiFi deployments, 
 - Python 3.11+ (for LLM service)
 - Bash shell (for deployment scripts)
 
-> **💡 Looking for alternatives to Kibana?** Check out [ALTERNATIVES.md](ALTERNATIVES.md) for detailed guides on using Grafana, Apache Superset, Prometheus, Metabase, and other visualization platforms with this observability stack.
+> **💡 Looking for alternatives to Kibana?** 
+> - **Quick decision guide**: [QUICK-START-ALTERNATIVES.md](QUICK-START-ALTERNATIVES.md) (5-minute read)
+> - **Detailed documentation**: [ALTERNATIVES.md](ALTERNATIVES.md) (Complete setup guides for Grafana, Superset, Prometheus, Metabase, and more)
 
 ### Installation
 
@@ -358,6 +360,7 @@ All automated actions are logged to `nifi-remediation-audit` index:
 
 ## 📚 Documentation
 
+- **[Quick Start: Choosing an Alternative](QUICK-START-ALTERNATIVES.md)**: 5-minute guide to selecting the best Kibana alternative for your needs
 - **[Alternatives to Kibana](ALTERNATIVES.md)**: Comprehensive guide to alternative visualization platforms (Grafana, Superset, Prometheus, etc.)
 - **[Deployment Guide](docs/DEPLOYMENT-GUIDE.md)**: Step-by-step installation instructions
 - **[Architecture](docs/ARCHITECTURE.md)**: System design and component interactions
