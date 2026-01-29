@@ -120,6 +120,7 @@ After setup:
 
 - **Detailed Guide**: See [KIBANA-SETUP-GUIDE.md](KIBANA-SETUP-GUIDE.md) for comprehensive instructions
 - **GitHub Issues**: Report problems at https://github.com/talentGitHub/ApacheNiFi/issues
+- **Community**: Ask questions via GitHub Discussions
 - **Troubleshooting**: See "Troubleshooting" section in the detailed guide
 
 ## Dashboard Overview

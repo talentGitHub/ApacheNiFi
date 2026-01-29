@@ -716,13 +716,13 @@ If you need to manually reference index patterns in dashboard JSON:
 
 - **Elastic Documentation**: https://www.elastic.co/guide/en/kibana/8.x/index.html
 - **Community Forum**: https://discuss.elastic.co/c/kibana
-- **GitHub Issues**: https://github.com/talentGitHub/ApacheNiFi/issues
+- **GitHub Repository**: https://github.com/talentGitHub/ApacheNiFi
 
 ### Support Channels
 
 1. **Create a GitHub Issue**: For bugs or feature requests
 2. **Discussion Forum**: For questions and best practices
-3. **Email Support**: support@your-company.com
+3. **Community Support**: Via GitHub Discussions
 
 ### Frequently Asked Questions
 
@@ -768,11 +768,13 @@ After setup, verify:
 
 | NiFi Version | Elasticsearch | Kibana | Status |
 |--------------|---------------|--------|--------|
-| 1.23.x       | 8.11+         | 8.11+  | ✅ Tested |
+| 1.23.x       | 8.11+         | 8.11+  | ✅ Recommended |
 | 1.22.x       | 8.10+         | 8.10+  | ✅ Compatible |
 | 1.21.x       | 8.8+          | 8.8+   | ✅ Compatible |
-| 1.20.x       | 8.6+          | 8.6+   | ⚠️ Limited testing |
-| < 1.20       | 7.17+         | 7.17+  | ⚠️ May require modifications |
+| 1.20.x       | 8.6+          | 8.6+   | ⚠️ May require modifications |
+| < 1.20       | 7.17+         | 7.17+  | ⚠️ Field name adjustments needed |
+
+**Note**: These dashboards are designed for NiFi 1.23.x with Kibana 8.11+. Test compatibility with your specific versions.
 
 ---
 

@@ -65,10 +65,20 @@ print_info() {
 collect_configuration() {
     print_header "Kibana Configuration"
     
+    print_warning "Note: Credentials will be stored in memory during script execution"
+    print_warning "For production use, consider setting KIBANA_URL and KIBANA_API_KEY as environment variables"
+    echo ""
+    
     # Kibana URL
     if [ -z "$KIBANA_URL" ]; then
         echo -n "Enter Kibana URL (e.g., https://your-deployment.kb.cloud.elastic.io): "
         read KIBANA_URL
+    fi
+    
+    # Validate URL format
+    if [[ ! "$KIBANA_URL" =~ ^https?:// ]]; then
+        print_error "Invalid URL format. URL must start with http:// or https://"
+        exit 1
     fi
     
     # Remove trailing slash if present
@@ -108,6 +118,12 @@ collect_configuration() {
     read ELASTICSEARCH_URL
     
     if [ -n "$ELASTICSEARCH_URL" ]; then
+        # Validate URL format
+        if [[ ! "$ELASTICSEARCH_URL" =~ ^https?:// ]]; then
+            print_error "Invalid URL format. URL must start with http:// or https://"
+            exit 1
+        fi
+        
         ELASTICSEARCH_URL="${ELASTICSEARCH_URL%/}"
         echo -n "Use same authentication for Elasticsearch? [Y/n]: "
         read ES_SAME_AUTH
@@ -210,17 +226,17 @@ check_prerequisites() {
 create_index_patterns() {
     print_header "Creating Index Patterns (Data Views)"
     
-    # Define index patterns
+    # Define index patterns (using pipe delimiter to avoid issues with colons in titles)
     declare -a INDEX_PATTERNS=(
-        "nifi-bulletins:nifi-bulletins-*:@timestamp:NiFi Bulletins"
-        "nifi-system-diagnostics:nifi-system-diagnostics-*:@timestamp:NiFi System Diagnostics"
-        "nifi-flow-performance:nifi-flow-performance-*:@timestamp:NiFi Flow Performance"
-        "nifi-ml-features:nifi-ml-features-hourly:@timestamp:NiFi ML Features Hourly"
-        "nifi-ml-error-patterns:nifi-ml-error-patterns:@timestamp:NiFi ML Error Patterns"
+        "nifi-bulletins|nifi-bulletins-*|@timestamp|NiFi Bulletins"
+        "nifi-system-diagnostics|nifi-system-diagnostics-*|@timestamp|NiFi System Diagnostics"
+        "nifi-flow-performance|nifi-flow-performance-*|@timestamp|NiFi Flow Performance"
+        "nifi-ml-features|nifi-ml-features-hourly|@timestamp|NiFi ML Features Hourly"
+        "nifi-ml-error-patterns|nifi-ml-error-patterns|@timestamp|NiFi ML Error Patterns"
     )
     
     for pattern_config in "${INDEX_PATTERNS[@]}"; do
-        IFS=':' read -r id pattern time_field title <<< "$pattern_config"
+        IFS='|' read -r id pattern time_field title <<< "$pattern_config"
         
         print_info "Creating data view: ${title}"
         

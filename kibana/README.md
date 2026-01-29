@@ -246,7 +246,7 @@ For detailed setup and usage instructions:
 
 - **Issues**: https://github.com/talentGitHub/ApacheNiFi/issues
 - **Discussions**: https://github.com/talentGitHub/ApacheNiFi/discussions
-- **Email**: support@your-company.com
+- **Community**: GitHub Discussions for questions and support
 
 ## License
 
